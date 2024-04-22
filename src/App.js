@@ -1,40 +1,19 @@
 import { useState, useEffect } from "react";
 import { favicon } from "./constants";
-import {
-  Routes,
-  Route,
-  useParams,
-  useSearchParams,
-  useNavigate,
-} from "react-router-dom";
 
 export default function App() {
   return (
-    <Routes>
-      <Route>
-        <Route path=":stationId" element={<Tides />} />
-        <Route path="*" element={<Tides />} />
-      </Route>
-    </Routes>
+    <Tides />
   );
 }
 
 function Tides() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const { stationId } = useParams();
   const [station, setStation] = useState(9413745);
   const [typeFilter, setTypeFilter] = useState("L");
   const [tides, setTides] = useState({
     predictions: [],
   });
   const [showMore, setShowMore] = useState(false);
-  const navigate = useNavigate();
-
-  function handleSubmit(event) {
-    event.preventDefault();
-    navigate(`/${station}/`);
-    retrieveTides();
-  }
 
   function addDaysToToday(days) {
     var ms = new Date().getTime() + 86400000 * (days - 1);
@@ -70,7 +49,7 @@ function Tides() {
       <table>
         <thead>
           <tr>
-            <th colspan="3">Time</th>
+            <th colSpan="3">Time</th>
             <th>Depth</th>
           </tr>
         </thead>
@@ -119,8 +98,6 @@ function Tides() {
   }
 
   useEffect(() => {
-    navigate(`/${station}/`);
-
     retrieveTides();
 
     document.title = "Cowell's Low Tides";
