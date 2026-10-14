@@ -1,9 +1,31 @@
 import { useState, useEffect } from "react";
 import { favicon } from "./constants";
+import YearTides from "./YearTides";
+import ThemeToggle from "./ThemeToggle";
+
+function useHash() {
+  const [hash, setHash] = useState(window.location.hash);
+  useEffect(() => {
+    const onChange = () => setHash(window.location.hash);
+    window.addEventListener("hashchange", onChange);
+    return () => window.removeEventListener("hashchange", onChange);
+  }, []);
+  return hash;
+}
 
 export default function App() {
+  const hash = useHash();
+  const isYear = hash !== "#next";
+
   return (
-    <Tides />
+    <>
+      <nav className="top-nav">
+        <a href="#year" className={isYear ? "active" : ""}>Full year</a>
+        <a href="#next" className={isYear ? "" : "active"}>Next 25 days</a>
+        <ThemeToggle />
+      </nav>
+      {isYear ? <YearTides /> : <Tides />}
+    </>
   );
 }
 

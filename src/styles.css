@@ -1,90 +1,694 @@
+/* ---------- Tokens ----------
+   Navy and gold. Gold marks lows (and accents); blue marks highs. The pair
+   is validated for color-vision deficiency in both themes, and the ▲/▼
+   shapes carry the distinction too. Dark-mode gold sits deliberately above
+   the usual series lightness band so it stays vibrant on navy. */
+
+:root {
+  color-scheme: light;
+  --bg: #f3f4f8;
+  --surface: #ffffff;
+  --ink: #0a1433;
+  --ink-2: #48547a;
+  --muted: #7c87a6;
+  --grid: #e0e4ee;
+  --axis: #bdc4d8;
+  --high: #2456c9;
+  --low: #c28a00;
+  --accent: #c28a00;
+  --pill-bg: #0a1433;
+  --pill-ink: #f2c230;
+  --wash: rgba(36, 86, 201, 0.09);
+  --range: #b9c1d6;
+  --today: rgba(194, 138, 0, 0.1);
+  --shadow: rgba(10, 20, 51, 0.18);
+
+  --font: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Barlow Condensed", "Barlow", system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #050b1f;
+    --surface: #0b1530;
+    --ink: #eef2fb;
+    --ink-2: #a7b2cf;
+    --muted: #6b7896;
+    --grid: #17234a;
+    --axis: #27365f;
+    --high: #4f86f7;
+    --low: #e0a800;
+    --accent: #e0a800;
+    --pill-bg: #e0a800;
+    --pill-ink: #050b1f;
+    --wash: rgba(79, 134, 247, 0.13);
+    --range: #2a3a68;
+    --today: rgba(224, 168, 0, 0.1);
+    --shadow: rgba(0, 0, 0, 0.5);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #050b1f;
+  --surface: #0b1530;
+  --ink: #eef2fb;
+  --ink-2: #a7b2cf;
+  --muted: #6b7896;
+  --grid: #17234a;
+  --axis: #27365f;
+  --high: #4f86f7;
+  --low: #e0a800;
+  --accent: #e0a800;
+  --pill-bg: #e0a800;
+  --pill-ink: #050b1f;
+  --wash: rgba(79, 134, 247, 0.13);
+  --range: #2a3a68;
+  --today: rgba(224, 168, 0, 0.1);
+  --shadow: rgba(0, 0, 0, 0.5);
+}
+
+/* ---------- Base ---------- */
+
 * {
   box-sizing: border-box;
 }
 
 body {
-  font-family: sans-serif;
-  font-size: 1.3em;
-  margin: 20px;
-  padding: 0;
+  margin: 0;
+  padding: 20px 20px 64px;
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.45;
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  max-width: 1040px;
+  margin: 0 auto;
 }
 
 h1 {
-  margin-top: 0;
-  font-size: 22px;
-}
-
-h2 {
-  margin-top: 0;
-  font-size: 20px;
-}
-
-h3 {
-  margin-top: 0;
-  font-size: 18px;
-}
-
-h4 {
-  margin-top: 0;
-  font-size: 16px;
-}
-
-h5 {
-  margin-top: 0;
-  font-size: 14px;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.01em;
 }
 
 h6 {
-  margin: 5px;
-  font-size: 12px;
-  color: rgb(55, 51, 51);
+  margin: 8px 0 20px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--ink-2);
 }
 
-code {
-  font-size: 1.2em;
+button {
+  font: inherit;
+  color: inherit;
 }
 
-ul {
-  padding-left: 20px;
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
-img {
-  height: 200px;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
+
+/* ---------- Top nav ---------- */
+
+.top-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  margin-bottom: 32px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.top-nav a {
+  color: var(--ink-2);
+  text-decoration: none;
+  padding: 4px 0;
+  border-bottom: 2px solid transparent;
+}
+
+.top-nav a:hover {
+  color: var(--ink);
+}
+
+.top-nav a.active {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+.top-nav .seg {
+  margin-left: auto;
+}
+
+/* ---------- Segmented control ---------- */
+
+.seg {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.seg button {
+  border: 0;
+  background: transparent;
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.seg button:hover {
+  color: var(--ink);
+  background: var(--grid);
+}
+
+.seg button[aria-pressed="true"] {
+  background: var(--pill-bg);
+  color: var(--pill-ink);
+}
+
+.seg-sm button {
+  padding: 2px 9px;
+  font-size: 13px;
+}
+
+.seg-year button {
+  padding: 4px 14px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+/* ---------- Year view ---------- */
+
+.year-head {
+  margin-bottom: 20px;
+}
+
+.year-head h1 {
+  font-size: clamp(44px, 8vw, 72px);
+}
+
+.sub {
+  max-width: 60ch;
+  margin: 10px 0 0;
+  color: var(--ink-2);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 24px;
+  margin-bottom: 20px;
+}
+
+.seg-filter {
+  margin-left: auto;
+}
+
+.seg-filter button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.seg-filter .mark + .mark {
+  margin-left: -2px;
+}
+
+/* On the pressed (inverted) pill the marks keep their colors; ring them so
+   they stay distinct from the dark fill. */
+.seg-filter button[aria-pressed="true"] .mark {
+  stroke: var(--pill-bg);
+  stroke-width: 1.5;
+  paint-order: stroke;
+}
+
+.notice {
+  padding: 16px 0;
+  color: var(--ink-2);
+}
+
+.year-body {
+  transition: opacity 0.15s;
+}
+
+.year-body.is-loading {
+  opacity: 0.45;
+}
+
+/* Tide marks: ▲ high, ▼ low */
+
+.mark {
+  flex: none;
+  width: 10px;
+  height: 10px;
+}
+
+.mark-H {
+  fill: var(--high);
+}
+
+.mark-L {
+  fill: var(--low);
+}
+
+/* ---------- Year strip ---------- */
+
+.strip {
+  margin: 0 0 40px;
+  padding: 20px 20px 14px;
+  background: var(--surface);
+  border-radius: 14px;
+}
+
+.strip-plot {
+  position: relative;
+}
+
+.strip svg {
+  display: block;
+  width: 100%;
+  height: 96px;
+  cursor: pointer;
+}
+
+.strip .range {
+  fill: var(--range);
+}
+
+.strip .minus {
+  fill: var(--low);
+}
+
+.strip .is-hover .range {
+  fill: var(--ink);
+}
+
+.strip .zero {
+  stroke: var(--axis);
+  stroke-width: 1;
+}
+
+.strip .today {
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+
+.strip-months {
+  display: flex;
+  margin-top: 6px;
+  border-top: 1px solid var(--grid);
+}
+
+.strip-months button {
+  flex-basis: 0;
+  min-width: 0;
+  padding: 6px 0 0;
+  border: 0;
+  border-left: 1px solid var(--grid);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-2);
+  text-align: left;
+  text-indent: 6px;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.strip-months button:first-child {
+  border-left: 0;
+  text-indent: 0;
+}
+
+.strip-months button:hover {
+  color: var(--ink);
+}
+
+.strip figcaption {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ---------- Months ---------- */
+
+.month {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 0 20px;
+  padding: 28px 0;
+  border-top: 2px solid var(--accent);
+  scroll-margin-top: 12px;
+}
+
+.month-head {
+  align-self: start;
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 16px);
+}
+
+.month-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.month-head p {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.month-head p + p {
+  margin-top: 2px;
+}
+
+/* Day rows: label | 24h curve | tides */
+
+.day-row {
+  display: grid;
+  grid-template-columns: 64px 200px 1fr;
+  align-items: center;
+  gap: 16px;
+  min-height: 36px;
+  padding: 0 10px;
+  margin: 0 -10px;
+  border-radius: 8px;
+}
+
+.day-row + .day-row:not(.is-today) {
+  box-shadow: inset 0 1px 0 var(--grid);
+}
+
+.day-row.is-today {
+  background: var(--today);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.day-row.is-today + .day-row {
+  box-shadow: none;
+}
+
+.axis-row {
+  min-height: 0;
+  padding-bottom: 4px;
+}
+
+.hour-axis {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 -8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.day-label {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  align-items: baseline;
+  font-variant-numeric: tabular-nums;
+}
+
+.day-label .dow {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.day-label .dom {
+  font-size: 15px;
+  font-weight: 600;
+  text-align: right;
+  color: var(--ink);
+}
+
+.is-weekend .day-label .dow {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+
+/* 24h curve */
+
+.spark {
+  position: relative;
+  height: 30px;
+}
+
+.spark svg {
+  display: block;
+  overflow: visible;
+  cursor: crosshair;
+}
+
+.spark .grid {
+  stroke: var(--grid);
+  stroke-width: 1;
+}
+
+.spark .zero {
+  stroke: var(--axis);
+  stroke-width: 1;
+}
+
+.spark .area {
+  fill: var(--wash);
+}
+
+.spark .curve {
+  fill: none;
+  stroke: var(--high);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.spark .dot {
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+
+.is-today .spark .dot {
+  stroke: var(--bg);
+}
+
+.dot-H {
+  fill: var(--high);
+}
+
+.dot-L {
+  fill: var(--low);
+}
+
+.dot-hover {
+  fill: var(--ink);
+}
+
+.spark .crosshair {
+  stroke: var(--ink-2);
+  stroke-width: 1;
+}
+
+/* Hover readout, shared by the strip and the curves */
+
+.tip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  z-index: 4;
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  padding: 5px 10px;
+  white-space: nowrap;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: 8px;
+  box-shadow: 0 6px 16px var(--shadow);
+  pointer-events: none;
+}
+
+.tip span {
+  opacity: 0.75;
+}
+
+/* Tide list: one cell per tide, separated by a gutter and a hairline.
+   Tracks inside a cell are fixed, so every cell is the same width and the
+   numbers line up from row to row. */
+
+.events {
+  display: grid;
+  grid-template-columns: repeat(4, max-content);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ev {
+  display: grid;
+  grid-template-columns: 10px 3.5em 2.6em;
+  justify-items: end;
+  align-items: center;
+  column-gap: 7px;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+.ev:first-child {
+  padding-left: 0;
+}
+
+.ev + .ev {
+  border-left: 1px solid var(--grid);
+}
+
+.ev time {
+  color: var(--ink);
+}
+
+.ev .h {
+  color: var(--ink-2);
+}
+
+.ev.is-neg .h {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* ---------- Narrow screens ---------- */
+
+@media (max-width: 1100px) {
+  .month {
+    grid-template-columns: 1fr;
+  }
+
+  .month-head {
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 16px;
+    margin-bottom: 12px;
+  }
+
+  .month-head h2 {
+    margin-right: auto;
+  }
+
+  .month-head p,
+  .month-head p + p {
+    margin: 0;
+  }
+}
+
+/* Below this the curve and four tide cells no longer fit on one line. */
+@media (max-width: 920px) {
+  .day-row {
+    grid-template-columns: 56px 1fr;
+    gap: 4px 12px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  .events {
+    grid-column: 1 / -1;
+  }
+
+  .hour-axis {
+    width: 216px;
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .seg-filter {
+    margin-left: 0;
+  }
+
+  .strip {
+    padding: 14px 12px 10px;
+  }
+
+  .strip-months button {
+    font-size: 11px;
+    text-indent: 3px;
+  }
+
+  .events {
+    grid-template-columns: repeat(2, max-content);
+    row-gap: 2px;
+    font-size: 14px;
+  }
+
+  /* Two per line on phones; restart the gutter at each line. */
+  .ev:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- Next 25 days table ---------- */
 
 td,
 th {
-  padding: 10px;
+  padding: 10px 12px;
   text-align: left;
-}
-
-tr:nth-of-type(even) {
-  background: #ddd;
-}
-
-tr th {
-  background: rgb(174, 0, 180);
-  color: white;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  border-radius: 0.24em;
+  background: var(--surface);
+  border-radius: 14px;
   overflow: hidden;
+  font-variant-numeric: tabular-nums;
 }
 
-button,
-a {
-  margin-right: 10px;
+tr th {
+  font-weight: 600;
+  color: var(--ink-2);
+  border-bottom: 2px solid var(--ink);
 }
 
-div {
-  margin-top: 10px;
-}
-
-.show-more {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+tbody tr + tr td {
+  border-top: 1px solid var(--grid);
 }
