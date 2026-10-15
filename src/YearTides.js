@@ -47,6 +47,7 @@ export default function YearTides({ station = defaultStation }) {
   const [show, setShow] = useState("all");
   const [data, setData] = useState({ status: "loading", extremes: [] });
   const monthRefs = useRef([]);
+  const todayRowRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -103,6 +104,20 @@ export default function YearTides({ station = defaultStation }) {
 
   const todayKey = dayKey(new Date());
   const hasData = data.extremes.length > 0;
+
+  // Scroll today's row into view once the data finishes loading.
+  useEffect(() => {
+    if (data.status !== "ready") return;
+    const el = todayRowRef.current;
+    if (!el) return;
+    const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Small delay so the layout has settled before we scroll.
+    const id = setTimeout(() => {
+      el.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "center" });
+    }, 100);
+    return () => clearTimeout(id);
+  }, [data.status]);
+
   const jumpTo = (m) => {
     const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     monthRefs.current[m]?.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
@@ -178,6 +193,7 @@ export default function YearTides({ station = defaultStation }) {
                     yMax={yMax}
                     show={show}
                     isToday={dayKey(day.start) === todayKey}
+                    todayRef={dayKey(day.start) === todayKey ? todayRowRef : null}
                   />
                 ))}
               </div>
@@ -268,7 +284,7 @@ function YearStrip({ days, yMin, yMax, todayKey, onPickMonth }) {
   );
 }
 
-function DayRow({ day, extremes, yMin, yMax, show, isToday }) {
+function DayRow({ day, extremes, yMin, yMax, show, isToday, todayRef }) {
   const events = show === "all" ? day.events : day.events.filter((e) => e.type === show);
   const dow = day.start.getDay();
   const className = ["day-row", isToday && "is-today", (dow === 0 || dow === 6) && "is-weekend"]
@@ -276,7 +292,7 @@ function DayRow({ day, extremes, yMin, yMax, show, isToday }) {
     .join(" ");
 
   return (
-    <div className={className}>
+    <div className={className} ref={todayRef}>
       <div className="day-label">
         <span className="dow">{day.start.toLocaleDateString("en-us", { weekday: "short" })}</span>
         <span className="dom">{day.start.getDate()}</span>
