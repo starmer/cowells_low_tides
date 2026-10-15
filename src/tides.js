@@ -76,6 +76,50 @@ export async function fetchYearExtremes(stationId, year) {
   return extremes;
 }
 
+// Sunrise/sunset via the NOAA solar algorithm (Meeus, Astronomical Algorithms).
+// lat/lon in decimal degrees; date is a JS Date in local time.
+// Returns { sunrise, sunset } as Date objects, or nulls for polar day/night.
+export function sunTimes(lat, lon, date) {
+  const R   = Math.PI / 180;
+  const deg = (r) => r / R;
+
+  const jd = date.getTime() / 86400000 + 2440587.5;
+  const T  = (jd - 2451545) / 36525;
+
+  const L0 = (280.46646 + T * (36000.76983 + T * 0.0003032)) % 360;
+  const M  = 357.52911 + T * (35999.05029 - T * 0.0001537);
+  const Mr = M * R;
+
+  const C      = Math.sin(Mr) * (1.914602 - T * (0.004817 + 0.000014 * T))
+               + Math.sin(2 * Mr) * (0.019993 - 0.000101 * T)
+               + Math.sin(3 * Mr) * 0.000289;
+  const omega  = 125.04 - 1934.136 * T;
+  const lambda = L0 + C - 0.00569 - 0.00478 * Math.sin(omega * R);
+
+  const e    = 23.439291 - T * 0.013004;
+  const decl = deg(Math.asin(Math.sin(e * R) * Math.sin(lambda * R)));
+
+  const y   = Math.tan((e / 2) * R) ** 2;
+  const eot = 4 * deg(
+    y * Math.sin(2 * L0 * R) - 2 * 0.016709 * Math.sin(Mr)
+    + 4 * 0.016709 * y * Math.sin(Mr) * Math.cos(2 * L0 * R)
+    - 0.5 * y ** 2 * Math.sin(4 * L0 * R)
+    - 1.25 * 0.016709 ** 2 * Math.sin(2 * Mr)
+  );
+
+  const cosHA = (Math.cos(90.833 * R) - Math.sin(lat * R) * Math.sin(decl * R))
+              / (Math.cos(lat * R) * Math.cos(decl * R));
+  if (Math.abs(cosHA) > 1) return { sunrise: null, sunset: null };
+
+  const HA   = deg(Math.acos(cosHA));
+  const noon = 720 - 4 * lon - eot;
+
+  const midnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const toDate   = (m) => new Date(midnight.getTime() + (m - midnight.getTimezoneOffset()) * 60000);
+
+  return { sunrise: toDate(noon - 4 * HA), sunset: toDate(noon + 4 * HA) };
+}
+
 // Height at an arbitrary time, cosine-interpolated between the surrounding
 // extremes. `extremes` must be sorted; returns null outside their range.
 export function heightAt(extremes, date) {

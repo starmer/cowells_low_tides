@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { defaultStation } from "./stations";
-import { fetchYearExtremes, heightAt } from "./tides";
+import { fetchYearExtremes, heightAt, sunTimes } from "./tides";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -64,6 +64,7 @@ export default function YearTides({ station = defaultStation }) {
   const shownYear = data.year ?? year;
 
   const { months, days, yMin, yMax } = useMemo(() => {
+    const { lat, lon } = station;
     const byDay = new Map();
     let min = Infinity;
     let max = -Infinity;
@@ -83,12 +84,15 @@ export default function YearTides({ station = defaultStation }) {
         const start = new Date(shownYear, m, d);
         const events = byDay.get(dayKey(start)) || [];
         const heights = events.map((e) => e.height);
+        const { sunrise, sunset } = lat != null ? sunTimes(lat, lon, start) : {};
         const day = {
           start,
           end: new Date(shownYear, m, d + 1),
           events,
           low: heights.length ? Math.min(...heights) : null,
           high: heights.length ? Math.max(...heights) : null,
+          sunrise,
+          sunset,
         };
         monthDays.push(day);
         days.push(day);
@@ -297,7 +301,7 @@ function DayRow({ day, extremes, yMin, yMax, show, isToday, todayRef }) {
         <span className="dow">{day.start.toLocaleDateString("en-us", { weekday: "short" })}</span>
         <span className="dom">{day.start.getDate()}</span>
       </div>
-      <DaySpark day={day} events={events} extremes={extremes} yMin={yMin} yMax={yMax} />
+      <DaySpark day={day} events={events} extremes={extremes} yMin={yMin} yMax={yMax} sunrise={day.sunrise} sunset={day.sunset} />
       <ol className="events">
         {events.map((e) => (
           <li key={e.date.getTime()} className={`ev${e.height < 0 ? " is-neg" : ""}`}>
@@ -320,7 +324,7 @@ function TideMark({ type }) {
   );
 }
 
-function DaySpark({ day, events, extremes, yMin, yMax }) {
+function DaySpark({ day, events, extremes, yMin, yMax, sunrise, sunset }) {
   const [hoverX, setHoverX] = useState(null);
   const t0 = day.start.getTime();
   const span = day.end.getTime() - t0;
@@ -370,6 +374,8 @@ function DaySpark({ day, events, extremes, yMin, yMax }) {
         onPointerLeave={() => setHoverX(null)}
         aria-hidden="true"
       >
+        {sunrise && <rect className="night" x="0" width={Math.max(0, x(sunrise))} y="0" height={SPARK_H} />}
+        {sunset  && <rect className="night" x={Math.min(SPARK_W, x(sunset))} width={Math.max(0, SPARK_W - x(sunset))} y="0" height={SPARK_H} />}
         {hourLines.map((hx) => (
           <line key={hx} className="grid" x1={hx} x2={hx} y1="0" y2={SPARK_H} />
         ))}
@@ -386,6 +392,12 @@ function DaySpark({ day, events, extremes, yMin, yMax }) {
           </>
         )}
       </svg>
+      {sunrise && (
+        <p className="spark-sun">
+          <span>↑ {formatTime(sunrise)}</span>
+          <span>↓ {formatTime(sunset)}</span>
+        </p>
+      )}
       {hover && (
         <div className="tip" style={{ left: `${(hoverX / SPARK_W) * 100}%` }}>
           <span>{formatTime(hover.date)}</span>
