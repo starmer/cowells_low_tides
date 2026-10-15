@@ -393,10 +393,14 @@ function DaySpark({ day, events, extremes, yMin, yMax, sunrise, sunset }) {
         )}
       </svg>
       {sunrise && (
-        <p className="spark-sun">
-          <span>↑ {formatTime(sunrise)}</span>
-          <span>↓ {formatTime(sunset)}</span>
-        </p>
+        <div className="spark-sun" aria-hidden="true">
+          <span className="spark-sun-item" style={{ left: `${(x(sunrise) / SPARK_W) * 100}%` }}>
+            ↑ {formatTime(sunrise)}
+          </span>
+          <span className="spark-sun-item" style={{ left: `${(x(sunset) / SPARK_W) * 100}%` }}>
+            ↓ {formatTime(sunset)}
+          </span>
+        </div>
       )}
       {hover && (
         <div className="tip" style={{ left: `${(hoverX / SPARK_W) * 100}%` }}>
