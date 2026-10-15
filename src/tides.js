@@ -12,9 +12,42 @@ function noaaDate(date) {
   return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}`;
 }
 
+// Cache keyed by station + year. Dates are stored as ms timestamps so they
+// survive JSON serialization without re-parsing. Version bump = cache bust.
+const CACHE_VERSION = 1;
+
+function cacheKey(stationId, year) {
+  return `tides-v${CACHE_VERSION}-${stationId}-${year}`;
+}
+
+function readCache(stationId, year) {
+  try {
+    const raw = localStorage.getItem(cacheKey(stationId, year));
+    if (!raw) return null;
+    const items = JSON.parse(raw);
+    // Rehydrate timestamps back into Date objects.
+    return items.map((p) => ({ ...p, date: new Date(p.date) }));
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(stationId, year, extremes) {
+  try {
+    // Store dates as numeric timestamps — no parsing on the way out.
+    const items = extremes.map((p) => ({ ...p, date: p.date.getTime() }));
+    localStorage.setItem(cacheKey(stationId, year), JSON.stringify(items));
+  } catch {
+    // localStorage full or unavailable — silently skip.
+  }
+}
+
 // High/low predictions for a calendar year, padded by a day on each side so
 // the curve at the edges of Jan 1 and Dec 31 has neighbors to interpolate to.
 export async function fetchYearExtremes(stationId, year) {
+  const cached = readCache(stationId, year);
+  if (cached) return cached;
+
   const params = new URLSearchParams({
     product: "predictions",
     application: "NOS.COOPS.TAC.WL",
@@ -33,11 +66,14 @@ export async function fetchYearExtremes(stationId, year) {
   const json = await response.json();
   if (json.error) throw new Error(json.error.message);
 
-  return json.predictions.map((p) => ({
+  const extremes = json.predictions.map((p) => ({
     date: parseNoaaTime(p.t),
     height: parseFloat(p.v),
     type: p.type, // "H" | "L"
   }));
+
+  writeCache(stationId, year, extremes);
+  return extremes;
 }
 
 // Height at an arbitrary time, cosine-interpolated between the surrounding
