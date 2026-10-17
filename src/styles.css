@@ -406,21 +406,25 @@ button {
 }
 
 .day-row.is-today {
-  min-height: 52px;
-  padding-top: 6px;
-  padding-bottom: 6px;
+  min-height: 64px;
+  padding-top: 10px;
+  padding-bottom: 10px;
   background: var(--today);
   box-shadow: inset 3px 0 0 var(--accent);
 }
 
 .is-today .day-label .dow {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--ink-2);
 }
 
 .is-today .day-label .dom {
-  font-size: 20px;
+  font-size: 26px;
+}
+
+.is-today .day-temp {
+  font-size: 13px;
 }
 
 .day-row.is-today + .day-row {

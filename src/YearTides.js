@@ -325,7 +325,7 @@ function DayRow({ day, extremes, yMin, yMax, show, isToday, todayRef, temp, isLi
         <span className="dow">{day.start.toLocaleDateString("en-us", { weekday: "short" })}</span>
         <span className="dom">{day.start.getDate()}</span>
         <span className={`day-temp${isLiveTemp ? " is-live" : ""}`}>
-          {isLiveTemp ? "" : "~"}{temp}°
+          {temp}°
         </span>
       </div>
       <DaySpark day={day} events={events} extremes={extremes} yMin={yMin} yMax={yMax} sunrise={day.sunrise} sunset={day.sunset} />
