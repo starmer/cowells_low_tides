@@ -7,6 +7,10 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December",
 ];
 
+// 6-year average (2020–2025) water temps in °F from NOAA Monterey station 9413450.
+// Used for all days except today, which gets the live reading.
+const MONTHLY_AVG_TEMP = [56, 56, 56, 57, 57, 59, 60, 62, 62, 60, 57, 57];
+
 const SPARK_W = 200;
 const SPARK_H = 30;
 const SPARK_PAD = 6;
@@ -48,6 +52,22 @@ export default function YearTides({ station = defaultStation }) {
   const [data, setData] = useState({ status: "loading", extremes: [] });
   const monthRefs = useRef([]);
   const todayRowRef = useRef(null);
+  const [waterTemp, setWaterTemp] = useState(null);
+
+  useEffect(() => {
+    const tempId = station.tempStationId ?? "9413450";
+    fetch(
+      `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=water_temperature` +
+      `&application=NOS.COOPS.TAC.WL&date=latest&station=${tempId}` +
+      `&time_zone=lst_ldt&units=english&format=json`
+    )
+      .then((r) => r.json())
+      .then((d) => {
+        const v = parseFloat(d.data?.[0]?.v);
+        if (!isNaN(v)) setWaterTemp(Math.round(v));
+      })
+      .catch(() => {});
+  }, [station.id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -198,6 +218,10 @@ export default function YearTides({ station = defaultStation }) {
                     show={show}
                     isToday={dayKey(day.start) === todayKey}
                     todayRef={dayKey(day.start) === todayKey ? todayRowRef : null}
+                    temp={dayKey(day.start) === todayKey && waterTemp != null
+                      ? waterTemp
+                      : MONTHLY_AVG_TEMP[day.start.getMonth()]}
+                    isLiveTemp={dayKey(day.start) === todayKey && waterTemp != null}
                   />
                 ))}
               </div>
@@ -288,7 +312,7 @@ function YearStrip({ days, yMin, yMax, todayKey, onPickMonth }) {
   );
 }
 
-function DayRow({ day, extremes, yMin, yMax, show, isToday, todayRef }) {
+function DayRow({ day, extremes, yMin, yMax, show, isToday, todayRef, temp, isLiveTemp }) {
   const events = show === "all" ? day.events : day.events.filter((e) => e.type === show);
   const dow = day.start.getDay();
   const className = ["day-row", isToday && "is-today", (dow === 0 || dow === 6) && "is-weekend"]
@@ -300,6 +324,9 @@ function DayRow({ day, extremes, yMin, yMax, show, isToday, todayRef }) {
       <div className="day-label">
         <span className="dow">{day.start.toLocaleDateString("en-us", { weekday: "short" })}</span>
         <span className="dom">{day.start.getDate()}</span>
+        <span className={`day-temp${isLiveTemp ? " is-live" : ""}`}>
+          {isLiveTemp ? "" : "~"}{temp}°
+        </span>
       </div>
       <DaySpark day={day} events={events} extremes={extremes} yMin={yMin} yMax={yMax} sunrise={day.sunrise} sunset={day.sunset} />
       <ol className="events">

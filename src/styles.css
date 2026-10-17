@@ -406,8 +406,21 @@ button {
 }
 
 .day-row.is-today {
+  min-height: 52px;
+  padding-top: 6px;
+  padding-bottom: 6px;
   background: var(--today);
   box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.is-today .day-label .dow {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.is-today .day-label .dom {
+  font-size: 20px;
 }
 
 .day-row.is-today + .day-row {
@@ -449,6 +462,21 @@ button {
 .is-weekend .day-label .dow {
   color: var(--ink);
   font-weight: 600;
+}
+
+.day-temp {
+  grid-column: 1 / -1;
+  text-align: right;
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  margin-top: 1px;
+}
+
+.day-temp.is-live {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 12px;
 }
 
 
