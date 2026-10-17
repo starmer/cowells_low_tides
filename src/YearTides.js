@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { defaultStation } from "./stations";
-import { fetchYearExtremes, heightAt, sunTimes } from "./tides";
+import { fetchYearExtremes, heightAt, sunTimes, fetchYearDailyTemps } from "./tides";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -53,7 +53,10 @@ export default function YearTides({ station = defaultStation }) {
   const monthRefs = useRef([]);
   const todayRowRef = useRef(null);
   const [waterTemp, setWaterTemp] = useState(null);
+  const [dailyTemps, setDailyTemps] = useState({});     // current year: "YYYY-MM-DD" → °F
+  const [prevYearTemps, setPrevYearTemps] = useState({}); // last year: same
 
+  // Live reading for today.
   useEffect(() => {
     const tempId = station.tempStationId ?? "9413450";
     fetch(
@@ -68,6 +71,18 @@ export default function YearTides({ station = defaultStation }) {
       })
       .catch(() => {});
   }, [station.id]);
+
+  // Historical daily averages: current year (past days) + previous year (for future day blending).
+  useEffect(() => {
+    const tempId = station.tempStationId ?? "9413450";
+    const thisYear = new Date().getFullYear();
+    fetchYearDailyTemps(tempId, year).then((t) => setDailyTemps(t ?? {}));
+    if (year === thisYear) {
+      fetchYearDailyTemps(tempId, year - 1).then((t) => setPrevYearTemps(t ?? {}));
+    } else {
+      setPrevYearTemps({});
+    }
+  }, [station.id, year]);
 
   useEffect(() => {
     let cancelled = false;
@@ -128,6 +143,23 @@ export default function YearTides({ station = defaultStation }) {
 
   const todayKey = dayKey(new Date());
   const hasData = data.extremes.length > 0;
+
+  // Pick the best available temperature for a given day.
+  function tempForDay(day, isToday) {
+    if (isToday && waterTemp != null) return { temp: waterTemp, live: true };
+    const d = day.start;
+    const pad = (n) => String(n).padStart(2, "0");
+    const key = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const monthAvg = MONTHLY_AVG_TEMP[d.getMonth()];
+    const isPast = day.start <= new Date();
+    if (isPast) {
+      return { temp: dailyTemps[key] ?? monthAvg, live: false };
+    }
+    // Future: blend same date last year with monthly average.
+    const prevKey = `${d.getFullYear() - 1}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const prev = prevYearTemps[prevKey];
+    return { temp: prev != null ? Math.round((prev + monthAvg) / 2) : monthAvg, live: false };
+  }
 
   // Scroll today's row into view once the data finishes loading.
   useEffect(() => {
@@ -218,10 +250,8 @@ export default function YearTides({ station = defaultStation }) {
                     show={show}
                     isToday={dayKey(day.start) === todayKey}
                     todayRef={dayKey(day.start) === todayKey ? todayRowRef : null}
-                    temp={dayKey(day.start) === todayKey && waterTemp != null
-                      ? waterTemp
-                      : MONTHLY_AVG_TEMP[day.start.getMonth()]}
-                    isLiveTemp={dayKey(day.start) === todayKey && waterTemp != null}
+                    temp={tempForDay(day, dayKey(day.start) === todayKey).temp}
+                    isLiveTemp={tempForDay(day, dayKey(day.start) === todayKey).live}
                   />
                 ))}
               </div>

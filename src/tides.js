@@ -76,6 +76,108 @@ export async function fetchYearExtremes(stationId, year) {
   return extremes;
 }
 
+// ── Water temperature ────────────────────────────────────────────────────────
+// Daily average temps, keyed "YYYY-MM-DD" → integer °F.
+//
+// Past/current year: fetched from NOAA hourly readings, averaged per day.
+//   Cache is busted whenever today's date differs from when it was written,
+//   so it stays at most one day stale.
+//
+// Complete past years (year < thisYear): fetched once, cached permanently —
+//   the data will never change.
+
+const TEMP_CACHE_VERSION = 1;
+
+function tempCacheKey(stationId, year) {
+  return `water-temp-v${TEMP_CACHE_VERSION}-${stationId}-${year}`;
+}
+
+function readTempCache(stationId, year) {
+  try {
+    const raw = localStorage.getItem(tempCacheKey(stationId, year));
+    if (!raw) return null;
+    const { fetchedOn, temps } = JSON.parse(raw);
+    const thisYear = new Date().getFullYear();
+    const today = noaaDate(new Date()).slice(0, 8); // "YYYYMMDD" → "YYYYMM" nope, just today string
+    // For complete past years the cache never expires. For the current year
+    // bust if fetched on a different calendar day.
+    if (year < thisYear || fetchedOn === todayStr()) return temps;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function writeTempCache(stationId, year, temps) {
+  try {
+    localStorage.setItem(
+      tempCacheKey(stationId, year),
+      JSON.stringify({ fetchedOn: todayStr(), temps })
+    );
+  } catch {}
+}
+
+function todayStr() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+// Returns { "YYYY-MM-DD": tempF, … } for days that have observed data.
+// Returns null if the year is in the future or the fetch fails.
+export async function fetchYearDailyTemps(stationId, year) {
+  const thisYear = new Date().getFullYear();
+  if (year > thisYear) return null;
+
+  const cached = readTempCache(stationId, year);
+  if (cached) return cached;
+
+  // Fetch up to yesterday for the current year (today comes from the live reading).
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const endDate = year < thisYear ? new Date(year, 11, 31) : yesterday;
+
+  const params = new URLSearchParams({
+    product: "water_temperature",
+    application: "NOS.COOPS.TAC.WL",
+    begin_date: noaaDate(new Date(year, 0, 1)),
+    end_date: noaaDate(endDate),
+    station: stationId,
+    time_zone: "lst_ldt",
+    units: "english",
+    interval: "h",
+    format: "json",
+  });
+
+  try {
+    const response = await fetch(
+      `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?${params}`
+    );
+    const json = await response.json();
+    if (json.error || !json.data) return null;
+
+    // Average hourly readings into one value per calendar day.
+    const byDay = {};
+    json.data.forEach((d) => {
+      const v = parseFloat(d.v);
+      if (isNaN(v)) return;
+      const key = d.t.slice(0, 10); // "YYYY-MM-DD"
+      if (!byDay[key]) byDay[key] = [];
+      byDay[key].push(v);
+    });
+
+    const temps = {};
+    Object.entries(byDay).forEach(([k, vals]) => {
+      temps[k] = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+    });
+
+    writeTempCache(stationId, year, temps);
+    return temps;
+  } catch {
+    return null;
+  }
+}
+
 // Sunrise/sunset via the NOAA solar algorithm (Meeus, Astronomical Algorithms).
 // lat/lon in decimal degrees; date is a JS Date in local time.
 // Returns { sunrise, sunset } as Date objects, or nulls for polar day/night.
