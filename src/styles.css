@@ -409,8 +409,7 @@ button {
   min-height: 64px;
   padding-top: 10px;
   padding-bottom: 10px;
-  background: var(--today);
-  box-shadow: inset 3px 0 0 var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent), inset -3px 0 0 var(--accent);
 }
 
 .is-today .day-label .dow {
