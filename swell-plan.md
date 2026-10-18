@@ -91,7 +91,7 @@ CDIP 156's spectrum (`waveEnergyDensity` + `waveMeanDirection` × 100 frequencie
 ## Todo
 
 - [x] **Basic swell card** (stripped-down Phase 1): Open-Meteo swell components, the MOP "at Cowell's" height, and the latest CDIP 156 reading.
-- [x] **Break picker.** "Swell at" select in the toolbar, remembered per browser. Breaks live in `stations.js`: Cowell's SC149, Steamer Lane SC150, Indicators SC151, Mitchell's Cove SC159, Pleasure Point SC117, The Hook SC116. All share the tide station, the water-temp station and CDIP 156. Points were matched from coordinates; still worth confirming on a map (open question 3).
+- [x] **Break picker.** "Swell at" select in the toolbar, remembered per browser. Breaks live in `stations.js`: Cowell's SC149, Steamer Lane SC150, Indicators SC151, Mitchell's Cove SC159, Pleasure Point SC117, The Hook SC116, Davenport Landing SC271. All share the tide station, the water-temp station and CDIP 156. Points were matched from coordinates; still worth confirming on a map (open question 3).
 - [ ] **NDBC 46042 via GitHub Actions.** A scheduled workflow (every 30–60 min) fetches `realtime2/46042.txt` and `.spec`, parses them into a small JSON file, and publishes it alongside the site. The page then reads its own file, so no proxy or CORS issue and still no server. Trade-offs: data up to ~1h stale (scheduled Actions can lag), plus a commit per run unless it publishes via Pages artifacts instead of committing. This would add the offshore "NW swell is coming" reading that matters most for the Lane and Indicators.
 - [x] Phase 2: swell on every day row, including history back to 2000.
 - [ ] Phase 3: hourly swell chart.

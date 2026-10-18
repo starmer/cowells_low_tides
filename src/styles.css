@@ -423,6 +423,71 @@ button {
   margin-top: 2px;
 }
 
+/* Past months in the current year collapse to one line: name, extremes
+   and a toggle. Opened past months keep a "Hide" toggle in their header. */
+
+.past-toggle,
+.month-toggle {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.past-toggle:hover,
+.month-toggle:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.past-toggle {
+  display: block;
+  margin: 0 0 12px;
+}
+
+.month-toggle {
+  display: block;
+  margin-top: 10px;
+}
+
+.month.is-collapsed {
+  padding: 12px 0;
+  border-top: 1px solid var(--grid);
+}
+
+.month.is-collapsed .month-head {
+  grid-column: 1 / -1;
+  position: static;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 20px;
+}
+
+.month.is-collapsed .month-head h2 {
+  min-width: 150px;
+  font-size: 22px;
+  color: var(--ink-2);
+}
+
+.month.is-collapsed .month-head p,
+.month.is-collapsed .month-head p + p {
+  margin: 0;
+}
+
+.month.is-collapsed .month-toggle {
+  margin: 0 0 0 auto;
+}
+
+/* The first full month after the collapsed ones gets its gold rule back. */
+.month.is-collapsed + .month:not(.is-collapsed) {
+  margin-top: 12px;
+}
+
 /* Day rows: label | 24h curve | tides */
 
 .day-row {
@@ -929,6 +994,15 @@ button {
 }
 
 @media (max-width: 640px) {
+  /* Collapsed months are just a name and a toggle on phones. */
+  .month.is-collapsed .month-head p {
+    display: none;
+  }
+
+  .month.is-collapsed .month-head h2 {
+    min-width: 0;
+  }
+
   .day-swell-detail {
     padding: 10px 14px 8px;
   }

@@ -4,7 +4,7 @@
 // 0.5–2 km offshore of the break itself), and they all share the Monterey
 // Canyon Outer buoy (CDIP 156 / NDBC 46236). Points were matched to breaks
 // from coordinates; a few MOP points nearby share duplicate coordinates
-// (SC136–147, SC155–157), so those are avoided.
+// (SC136–147, SC155–157, SC266–269), so those are avoided.
 export const stations = [
   {
     id: "9413745",
@@ -21,6 +21,7 @@ export const stations = [
       { id: "mitchells", name: "Mitchell's Cove", mopPoint: "SC159" },
       { id: "pleasure-point", name: "Pleasure Point", mopPoint: "SC117" },
       { id: "the-hook", name: "The Hook", mopPoint: "SC116" },
+      { id: "davenport-landing", name: "Davenport Landing", mopPoint: "SC271" },
     ],
   },
 ];

@@ -256,10 +256,45 @@ export default function YearTides({ station = defaultStation }) {
     return () => clearTimeout(id);
   }, [data.status]);
 
-  const jumpTo = (m) => {
+  // In the current year, months that have already gone by start collapsed to
+  // just their header. Each can be opened on its own, or all at once.
+  const [openPast, setOpenPast] = useState(() => new Set());
+  useEffect(() => setOpenPast(new Set()), [year]);
+  const pastMonths = shownYear === thisYear ? new Date().getMonth() : 0;
+  const isCollapsed = (m) => m < pastMonths && !openPast.has(m);
+  const allPastOpen = pastMonths > 0 && openPast.size >= pastMonths;
+  const setMonthOpen = (m, open) =>
+    setOpenPast((prev) => {
+      const next = new Set(prev);
+      if (open) next.add(m);
+      else next.delete(m);
+      return next;
+    });
+  const togglePast = () =>
+    setOpenPast(allPastOpen ? new Set() : new Set(Array.from({ length: pastMonths }, (_, m) => m)));
+
+  const scrollToMonth = (m) => {
     const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     monthRefs.current[m]?.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
   };
+
+  // Picking a collapsed month (from the strip) opens it, then scrolls once
+  // its days have rendered.
+  const pendingMonth = useRef(null);
+  const jumpTo = (m) => {
+    if (isCollapsed(m)) {
+      pendingMonth.current = m;
+      setMonthOpen(m, true);
+    } else {
+      scrollToMonth(m);
+    }
+  };
+
+  useEffect(() => {
+    if (pendingMonth.current === null) return;
+    scrollToMonth(pendingMonth.current);
+    pendingMonth.current = null;
+  });
 
   const scrollToToday = () => {
     const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -334,8 +369,18 @@ export default function YearTides({ station = defaultStation }) {
         <div className={data.status === "loading" ? "year-body is-loading" : "year-body"}>
           <YearStrip days={days} yMin={yMin} yMax={yMax} todayKey={todayKey} onPickMonth={jumpTo} />
 
+          {pastMonths > 0 && (
+            <button className="past-toggle" onClick={togglePast} aria-expanded={allPastOpen}>
+              {allPastOpen ? "Hide past months" : `Show past months (${pastMonths})`}
+            </button>
+          )}
+
           {months.map((month, m) => (
-            <section key={month.name} className="month" ref={(el) => (monthRefs.current[m] = el)}>
+            <section
+              key={month.name}
+              className={`month${isCollapsed(m) ? " is-collapsed" : ""}`}
+              ref={(el) => (monthRefs.current[m] = el)}
+            >
               <header className="month-head">
                 <h2>{month.name}</h2>
                 {show !== "H" && month.lowest && (
@@ -348,37 +393,48 @@ export default function YearTides({ station = defaultStation }) {
                     Highest {formatHeight(month.highest.height)} ft on the {ordinal(month.highest.date.getDate())}
                   </p>
                 )}
+                {m < pastMonths && (
+                  <button
+                    className="month-toggle"
+                    aria-expanded={!isCollapsed(m)}
+                    onClick={() => setMonthOpen(m, isCollapsed(m))}
+                  >
+                    {isCollapsed(m) ? "Show days ▾" : "Hide ▴"}
+                  </button>
+                )}
               </header>
-              <div className="month-days">
-                <div className="day-row axis-row" aria-hidden="true">
-                  <span />
-                  <div className="hour-axis">
-                    <span>12a</span><span>6a</span><span>noon</span><span>6p</span><span>12a</span>
+              {!isCollapsed(m) && (
+                <div className="month-days">
+                  <div className="day-row axis-row" aria-hidden="true">
+                    <span />
+                    <div className="hour-axis">
+                      <span>12a</span><span>6a</span><span>noon</span><span>6p</span><span>12a</span>
+                    </div>
                   </div>
+                  {month.days.map((day) => (
+                    <Fragment key={day.start.getTime()}>
+                      <DayRow
+                        day={day}
+                        extremes={data.extremes}
+                        yMin={yMin}
+                        yMax={yMax}
+                        show={show}
+                        isToday={dayKey(day.start) === todayKey}
+                        todayRef={dayKey(day.start) === todayKey ? todayRowRef : null}
+                        temp={tempForDay(day, dayKey(day.start) === todayKey).temp}
+                        isLiveTemp={tempForDay(day, dayKey(day.start) === todayKey).live}
+                        swell={swellForDay(day)}
+                        swellOpen={openSwellDay === isoDay(day.start)}
+                        onToggleSwell={canExpand(day) && brk ? () => toggleSwellDay(isoDay(day.start)) : null}
+                      />
+                      {dayKey(day.start) === todayKey && <SwellCard station={station} brk={brk} />}
+                      {openSwellDay === isoDay(day.start) && canExpand(day) && brk && (
+                        <DaySwell day={day} brk={brk} mopRecords={mopForecast} hours={swellHours} />
+                      )}
+                    </Fragment>
+                  ))}
                 </div>
-                {month.days.map((day) => (
-                  <Fragment key={day.start.getTime()}>
-                    <DayRow
-                      day={day}
-                      extremes={data.extremes}
-                      yMin={yMin}
-                      yMax={yMax}
-                      show={show}
-                      isToday={dayKey(day.start) === todayKey}
-                      todayRef={dayKey(day.start) === todayKey ? todayRowRef : null}
-                      temp={tempForDay(day, dayKey(day.start) === todayKey).temp}
-                      isLiveTemp={tempForDay(day, dayKey(day.start) === todayKey).live}
-                      swell={swellForDay(day)}
-                      swellOpen={openSwellDay === isoDay(day.start)}
-                      onToggleSwell={canExpand(day) && brk ? () => toggleSwellDay(isoDay(day.start)) : null}
-                    />
-                    {dayKey(day.start) === todayKey && <SwellCard station={station} brk={brk} />}
-                    {openSwellDay === isoDay(day.start) && canExpand(day) && brk && (
-                      <DaySwell day={day} brk={brk} mopRecords={mopForecast} hours={swellHours} />
-                    )}
-                  </Fragment>
-                ))}
-              </div>
+              )}
             </section>
           ))}
         </div>
