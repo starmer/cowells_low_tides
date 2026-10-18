@@ -156,22 +156,6 @@ button {
   font-weight: 500;
 }
 
-.top-nav a {
-  color: var(--ink-2);
-  text-decoration: none;
-  padding: 4px 0;
-  border-bottom: 2px solid transparent;
-}
-
-.top-nav a:hover {
-  color: var(--ink);
-}
-
-.top-nav a.active {
-  color: var(--ink);
-  border-bottom-color: var(--accent);
-}
-
 .top-nav .seg {
   margin-left: auto;
 }
@@ -1294,31 +1278,4 @@ button {
     transition: none !important;
     scroll-behavior: auto !important;
   }
-}
-
-/* ---------- Next 25 days table ---------- */
-
-td,
-th {
-  padding: 10px 12px;
-  text-align: left;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--surface);
-  border-radius: 14px;
-  overflow: hidden;
-  font-variant-numeric: tabular-nums;
-}
-
-tr th {
-  font-weight: 600;
-  color: var(--ink-2);
-  border-bottom: 2px solid var(--ink);
-}
-
-tbody tr + tr td {
-  border-top: 1px solid var(--grid);
 }

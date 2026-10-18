@@ -1,11 +1,15 @@
-# Cowell's Low Tides
+# Santa Cruz tides
 
-Tide predictions for Cowell's Beach in Santa Cruz, using data from [NOAA Tides & Currents](https://tidesandcurrents.noaa.gov/) (station 9413745).
+Tides, water temperature and swell for Santa Cruz surf spots.
 
 Live site: https://starmer.github.io/cowells_low_tides/
 
-- **Full year**: every high and low tide for a year, with a daily tide curve and a year-at-a-glance strip that highlights minus tides.
-- **Next 25 days**: daytime low tides under 1 foot.
+- **Tides:** every high and low for a year from [NOAA Tides & Currents](https://tidesandcurrents.noaa.gov/) station 9413745, with a daily tide curve and a year strip that highlights minus tides.
+- **Water temperature:** NOAA Monterey station 9413450.
+- **Swell:** offshore swell components from NOAA GFS-Wave via [Open-Meteo](https://open-meteo.com/), modeled nearshore waves per break from [CDIP](https://cdip.ucsd.edu/) MOP, and the Monterey Canyon buoy (CDIP 156).
+- **Best times:** hourly ratings per break from tide, wave size, swell direction and wind. Each break's preferences are in `src/surfRating.js`.
+
+See `swell-plan.md` for data sources and the todo list.
 
 ## Development
 
