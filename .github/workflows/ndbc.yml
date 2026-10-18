@@ -23,18 +23,18 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Check out the script
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: main
           sparse-checkout: scripts
 
       - name: Check out the data branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: data
           path: data
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
 
