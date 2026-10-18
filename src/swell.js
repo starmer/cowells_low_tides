@@ -220,3 +220,31 @@ export function fetchMopForecast(pointId) {
     return records.filter((r) => r.time >= today.getTime());
   });
 }
+
+// Hourly wind for the next 10 days from Open-Meteo's weather forecast:
+// [{ time, speed (knots), gusts, direction (degrees, where it blows from) }].
+export function fetchWindHourly(lat, lon) {
+  return cached(`wind-hourly-${lat}-${lon}`, async () => {
+    const params = new URLSearchParams({
+      latitude: lat,
+      longitude: lon,
+      hourly: "wind_speed_10m,wind_direction_10m,wind_gusts_10m",
+      wind_speed_unit: "kn",
+      timezone: "America/Los_Angeles",
+      forecast_days: 10,
+    });
+    const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`);
+    const json = await response.json();
+    if (json.error) throw new Error(json.reason);
+    const h = json.hourly;
+    return h.time.map((t, i) => {
+      const [y, mo, d, hr] = t.split(/[-T:]/).map(Number);
+      return {
+        time: new Date(y, mo - 1, d, hr).getTime(),
+        speed: h.wind_speed_10m[i],
+        gusts: h.wind_gusts_10m[i],
+        direction: h.wind_direction_10m[i],
+      };
+    });
+  });
+}

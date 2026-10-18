@@ -3,7 +3,16 @@ import { defaultStation } from "./stations";
 import { fetchYearExtremes, heightAt, sunTimes, fetchYearDailyTemps } from "./tides";
 import SwellCard, { SwellArrow } from "./SwellCard";
 import DaySwell from "./DaySwell";
-import { fetchYearDailySwell, fetchMopForecast, fetchSwellHourly, dailyMax, compassDir } from "./swell";
+import BestTimesPanel from "./BestTimesPanel";
+import { bestTimes, BREAK_PREFS } from "./surfRating";
+import {
+  fetchYearDailySwell,
+  fetchMopForecast,
+  fetchSwellHourly,
+  fetchWindHourly,
+  dailyMax,
+  compassDir,
+} from "./swell";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -38,6 +47,7 @@ function isoDay(d) {
 
 const BREAK_KEY = "swell-break";
 const SWELL_DETAIL_DAYS = 10; // upper limit on how many days ahead can be expanded
+const hasBestPrefs = (brk) => brk.id in BREAK_PREFS;
 
 function savedBreak(station) {
   let id = null;
@@ -118,6 +128,76 @@ export default function YearTides({ station = defaultStation }) {
     fetchSwellHourly(station.lat, station.lon).then(setSwellHours).catch(() => {});
   }, [station.lat, station.lon]);
 
+  const shownYear = data.year ?? year;
+
+  // Best times to surf: rated windows for the coming days, shown in a panel
+  // and as bands on each day's tide curve.
+  const [bestOn, setBestOn] = useState(false);
+  const [windHours, setWindHours] = useState(null);
+  const bestPanelRef = useRef(null);
+  const wantsBestPanel = useRef(false);
+
+  useEffect(() => {
+    if (!bestOn || !brk) return;
+    let cancelled = false;
+    setWindHours(null);
+    fetchWindHourly(brk.lat, brk.lon)
+      .then((w) => !cancelled && setWindHours(w))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [bestOn, brk]);
+
+  // Recomputed when the date rolls over.
+  const todayIso = isoDay(new Date());
+  const bestDays = useMemo(() => {
+    const [y, m, d] = todayIso.split("-").map(Number);
+    return Array.from({ length: SWELL_DETAIL_DAYS }, (_, i) => {
+      const start = new Date(y, m - 1, d + i);
+      return { start, key: isoDay(start) };
+    });
+  }, [todayIso]);
+
+  const bestResults = useMemo(() => {
+    if (!bestOn || !brk || shownYear !== thisYear || !mopForecast.length) return {};
+    return bestTimes(
+      brk.id,
+      bestDays.map((d) => d.start),
+      {
+        extremes: data.extremes,
+        mopRecords: mopForecast,
+        swellHours,
+        windHours,
+        lat: station.lat,
+        lon: station.lon,
+      }
+    );
+  }, [bestOn, brk, shownYear, thisYear, bestDays, data.extremes, mopForecast, swellHours, windHours, station.lat, station.lon]);
+
+  const toggleBest = () => {
+    if (bestOn) {
+      setBestOn(false);
+      return;
+    }
+    setBestOn(true);
+    wantsBestPanel.current = true;
+    if (year !== thisYear) setYear(thisYear);
+  };
+
+  // Bring the panel into view once it has rendered.
+  useEffect(() => {
+    if (!wantsBestPanel.current || !bestPanelRef.current) return;
+    wantsBestPanel.current = false;
+    const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    bestPanelRef.current.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
+  });
+
+  const scrollToDay = (key) => {
+    const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    document.getElementById(`day-${key}`)?.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "center" });
+  };
+
   // Today and coming days can open a detail panel under their row, as far as
   // the nearshore forecast reaches (about a week), capped at 10 days.
   const detailStart = new Date();
@@ -168,7 +248,6 @@ export default function YearTides({ station = defaultStation }) {
     };
   }, [station.id, year]);
 
-  const shownYear = data.year ?? year;
 
   const { months, days, yMin, yMax } = useMemo(() => {
     const { lat, lon } = station;
@@ -261,6 +340,13 @@ export default function YearTides({ station = defaultStation }) {
   const [openPast, setOpenPast] = useState(() => new Set());
   useEffect(() => setOpenPast(new Set()), [year]);
   const pastMonths = shownYear === thisYear ? new Date().getMonth() : 0;
+
+  // Within the current month, days before today collapse behind one toggle.
+  const [showEarlierDays, setShowEarlierDays] = useState(false);
+  useEffect(() => setShowEarlierDays(false), [year]);
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const isEarlierDay = (day) => shownYear === thisYear && day.start.getMonth() === pastMonths && day.start < todayStart;
   const isCollapsed = (m) => m < pastMonths && !openPast.has(m);
   const allPastOpen = pastMonths > 0 && openPast.size >= pastMonths;
   const setMonthOpen = (m, open) =>
@@ -347,6 +433,11 @@ export default function YearTides({ station = defaultStation }) {
             </select>
           </label>
         )}
+        {brk && hasBestPrefs(brk) && (
+          <button className="best-btn" aria-pressed={bestOn} onClick={toggleBest}>
+            Best times
+          </button>
+        )}
         <div className="seg seg-filter" role="group" aria-label="Show tides">
           {FILTERS.map((f) => (
             <button key={f.id} aria-pressed={show === f.id} onClick={() => setShow(f.id)}>
@@ -367,6 +458,12 @@ export default function YearTides({ station = defaultStation }) {
 
       {hasData && (
         <div className={data.status === "loading" ? "year-body is-loading" : "year-body"}>
+          {bestOn && brk && shownYear === thisYear && (
+            <div ref={bestPanelRef} className="best-times-wrap">
+              <BestTimesPanel brk={brk} days={bestDays} results={bestResults} onPickDay={scrollToDay} />
+            </div>
+          )}
+
           <YearStrip days={days} yMin={yMin} yMax={yMax} todayKey={todayKey} onPickMonth={jumpTo} />
 
           {pastMonths > 0 && (
@@ -411,7 +508,18 @@ export default function YearTides({ station = defaultStation }) {
                       <span>12a</span><span>6a</span><span>noon</span><span>6p</span><span>12a</span>
                     </div>
                   </div>
-                  {month.days.map((day) => (
+                  {month.days.some(isEarlierDay) && (
+                    <button
+                      className="earlier-toggle"
+                      aria-expanded={showEarlierDays}
+                      onClick={() => setShowEarlierDays((v) => !v)}
+                    >
+                      {showEarlierDays
+                        ? "Hide earlier days ▴"
+                        : `Show ${month.days.filter(isEarlierDay).length} earlier days ▾`}
+                    </button>
+                  )}
+                  {month.days.filter((day) => showEarlierDays || !isEarlierDay(day)).map((day) => (
                     <Fragment key={day.start.getTime()}>
                       <DayRow
                         day={day}
@@ -424,6 +532,7 @@ export default function YearTides({ station = defaultStation }) {
                         temp={tempForDay(day, dayKey(day.start) === todayKey).temp}
                         isLiveTemp={tempForDay(day, dayKey(day.start) === todayKey).live}
                         swell={swellForDay(day)}
+                        surfWindows={bestResults[isoDay(day.start)]?.windows}
                         swellOpen={openSwellDay === isoDay(day.start)}
                         onToggleSwell={canExpand(day) && brk ? () => toggleSwellDay(isoDay(day.start)) : null}
                       />
@@ -526,7 +635,21 @@ function YearStrip({ days, yMin, yMax, todayKey, onPickMonth }) {
   );
 }
 
-function DayRow({ day, extremes, yMin, yMax, show, isToday, todayRef, temp, isLiveTemp, swell, swellOpen, onToggleSwell }) {
+function DayRow({
+  day,
+  extremes,
+  yMin,
+  yMax,
+  show,
+  isToday,
+  todayRef,
+  temp,
+  isLiveTemp,
+  swell,
+  swellOpen,
+  onToggleSwell,
+  surfWindows,
+}) {
   const events = show === "all" ? day.events : day.events.filter((e) => e.type === show);
   const dow = day.start.getDay();
   const className = ["day-row", isToday && "is-today", (dow === 0 || dow === 6) && "is-weekend"]
@@ -534,7 +657,7 @@ function DayRow({ day, extremes, yMin, yMax, show, isToday, todayRef, temp, isLi
     .join(" ");
 
   return (
-    <div className={className} ref={todayRef}>
+    <div className={className} ref={todayRef} id={`day-${isoDay(day.start)}`}>
       <div className="day-label">
         <span className="dow">{day.start.toLocaleDateString("en-us", { weekday: "short" })}</span>
         <span className="dom">{day.start.getDate()}</span>
@@ -543,7 +666,16 @@ function DayRow({ day, extremes, yMin, yMax, show, isToday, todayRef, temp, isLi
         </span>
         {swell && <DaySwellLabel swell={swell} open={swellOpen} onToggle={onToggleSwell} />}
       </div>
-      <DaySpark day={day} events={events} extremes={extremes} yMin={yMin} yMax={yMax} sunrise={day.sunrise} sunset={day.sunset} />
+      <DaySpark
+        day={day}
+        events={events}
+        extremes={extremes}
+        yMin={yMin}
+        yMax={yMax}
+        sunrise={day.sunrise}
+        sunset={day.sunset}
+        surfWindows={surfWindows}
+      />
       <ol className="events">
         {events.map((e) => (
           <li key={e.date.getTime()} className={`ev${e.height < 0 ? " is-neg" : ""}`}>
@@ -589,7 +721,7 @@ function TideMark({ type }) {
   );
 }
 
-function DaySpark({ day, events, extremes, yMin, yMax, sunrise, sunset }) {
+function DaySpark({ day, events, extremes, yMin, yMax, sunrise, sunset, surfWindows }) {
   const [hoverX, setHoverX] = useState(null);
   const t0 = day.start.getTime();
   const span = day.end.getTime() - t0;
@@ -641,6 +773,16 @@ function DaySpark({ day, events, extremes, yMin, yMax, sunrise, sunset }) {
       >
         {sunrise && <rect className="night" x="0" width={Math.max(0, x(sunrise))} y="0" height={SPARK_H} />}
         {sunset  && <rect className="night" x={Math.min(SPARK_W, x(sunset))} width={Math.max(0, SPARK_W - x(sunset))} y="0" height={SPARK_H} />}
+        {surfWindows?.map((w) => (
+          <rect
+            key={w.start}
+            className={`surf-window is-${w.rating.toLowerCase()}`}
+            x={x(new Date(w.start))}
+            width={Math.max(2, x(new Date(w.end)) - x(new Date(w.start)))}
+            y="0"
+            height={SPARK_H}
+          />
+        ))}
         {hourLines.map((hx) => (
           <line key={hx} className="grid" x1={hx} x2={hx} y1="0" y2={SPARK_H} />
         ))}
