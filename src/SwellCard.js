@@ -39,7 +39,7 @@ function ComponentList({ items }) {
 function Reading({ label, r, live }) {
   if (!r) return null;
   return (
-    <div className={`swell-reading${live ? " is-live" : ""}`}>
+    <div className={`swell-reading${live ? " is-live" : ""}`} tabIndex={0} aria-describedby="swell-explain">
       <span className="swell-reading-label">{label}</span>
       <span className="swell-reading-value">
         {r.height.toFixed(1)}ft <span>{Math.round(r.period)}s</span> {compassDir(r.direction)}
@@ -79,8 +79,18 @@ export default function SwellCard({ station }) {
         )}
       </div>
       <div className="swell-readings">
-        <Reading label={`At ${station.swellSpot ?? station.spot}`} r={mop} />
+        <Reading label={`At ${station.swellSpot ?? station.spot} (Modeled)`} r={mop} />
         <Reading label={`${station.cdipBuoyName ?? "CDIP"} buoy`} r={buoy} live />
+        <div className="swell-explain" id="swell-explain" role="tooltip">
+          <p>
+            <b>Modeled</b> is an estimate of the waves just off {station.swellSpot ?? station.spot}, worked out from
+            what's offshore. It accounts for the point blocking some of the swell, so it's usually smaller.
+          </p>
+          <p>
+            <b>Buoy</b> is a real measurement from open water at the mouth of Monterey Bay. It sees all the swell
+            before anything blocks it.
+          </p>
+        </div>
       </div>
       <p className="swell-source">
         Swell: NOAA GFS-Wave via Open-Meteo. Nearshore: CDIP MOP {station.mopPoint}. Buoy: CDIP{" "}

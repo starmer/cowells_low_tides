@@ -721,7 +721,12 @@ button {
   padding-top: 22px;
 }
 
+.swell-readings {
+  position: relative;
+}
+
 .swell-reading {
+  cursor: help;
   display: grid;
   grid-template-columns: max-content max-content;
   align-items: baseline;
@@ -729,7 +734,10 @@ button {
 }
 
 .swell-reading-label {
+  justify-self: start;
   grid-column: 1 / -1;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
   font-size: 12px;
   color: var(--muted);
 }
@@ -752,6 +760,47 @@ button {
 .swell-reading-time {
   font-size: 11px;
   color: var(--muted);
+}
+
+/* One explanation for both readings: shown while either is hovered or
+   focused (a tap focuses it on touch screens). */
+.swell-explain {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 4;
+  width: min(320px, 100%);
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: 8px;
+  box-shadow: 0 4px 14px var(--shadow);
+}
+
+.swell-explain p {
+  margin: 0;
+}
+
+.swell-explain p + p {
+  margin-top: 6px;
+}
+
+.swell-reading:hover ~ .swell-explain,
+.swell-reading:focus ~ .swell-explain {
+  display: block;
+}
+
+.swell-reading:focus {
+  outline: none;
+}
+
+.swell-reading:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 .swell-source {
