@@ -2,6 +2,7 @@ import { Fragment, useState, useEffect, useMemo, useRef } from "react";
 import { defaultStation } from "./stations";
 import { fetchYearExtremes, heightAt, sunTimes, fetchYearDailyTemps } from "./tides";
 import SwellCard from "./SwellCard";
+import { fetchYearDailySwell, fetchDailySwellForecast, compassDir } from "./swell";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -27,6 +28,22 @@ const FILTERS = [
 ];
 
 const dayKey = (d) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+
+// "YYYY-MM-DD", the key used by the water temp and swell data.
+function isoDay(d) {
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+const BREAK_KEY = "swell-break";
+
+function savedBreak(station) {
+  let id = null;
+  try {
+    id = localStorage.getItem(BREAK_KEY);
+  } catch {}
+  return station.breaks?.find((b) => b.id === id) ?? station.breaks?.[0] ?? null;
+}
 
 function formatTime(date) {
   return date
@@ -56,6 +73,41 @@ export default function YearTides({ station = defaultStation }) {
   const [waterTemp, setWaterTemp] = useState(null);
   const [dailyTemps, setDailyTemps] = useState({});     // current year: "YYYY-MM-DD" → °F
   const [prevYearTemps, setPrevYearTemps] = useState({}); // last year: same
+  const [brk, setBrk] = useState(() => savedBreak(station));
+  const [dailySwell, setDailySwell] = useState({});       // "YYYY-MM-DD" → { height, period, direction }
+  const [swellForecast, setSwellForecast] = useState({}); // today onward, same shape
+
+  const pickBreak = (id) => {
+    const next = station.breaks.find((b) => b.id === id);
+    setBrk(next);
+    try {
+      localStorage.setItem(BREAK_KEY, next.id);
+    } catch {}
+  };
+
+  // Daily biggest nearshore wave height at the selected break: past days for
+  // the shown year, plus the forecast for today and the coming week.
+  useEffect(() => {
+    let cancelled = false;
+    setDailySwell({});
+    if (brk) fetchYearDailySwell(brk.mopPoint, year).then((d) => !cancelled && setDailySwell(d ?? {}));
+    return () => {
+      cancelled = true;
+    };
+  }, [brk, year]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setSwellForecast({});
+    if (brk) {
+      fetchDailySwellForecast(brk.mopPoint)
+        .then((d) => !cancelled && setSwellForecast(d ?? {}))
+        .catch(() => {});
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [brk]);
 
   // Live reading for today.
   useEffect(() => {
@@ -145,6 +197,16 @@ export default function YearTides({ station = defaultStation }) {
   const todayKey = dayKey(new Date());
   const hasData = data.extremes.length > 0;
 
+  // Past days come from the model's record of what happened. Today takes the
+  // bigger of the record so far and the forecast; later days, the forecast.
+  function swellForDay(day) {
+    const key = isoDay(day.start);
+    const past = dailySwell[key];
+    const ahead = swellForecast[key];
+    if (past && ahead) return ahead.height > past.height ? ahead : past;
+    return past ?? (ahead ? { ...ahead, forecast: true } : null);
+  }
+
   // Pick the best available temperature for a given day.
   function tempForDay(day, isToday) {
     if (isToday && waterTemp != null) return { temp: waterTemp, live: true };
@@ -219,6 +281,18 @@ export default function YearTides({ station = defaultStation }) {
             </button>
           ))}
         </div>
+        {station.breaks && (
+          <label className="break-pick">
+            <span>Swell at</span>
+            <select value={brk?.id} onChange={(e) => pickBreak(e.target.value)}>
+              {station.breaks.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <div className="seg seg-filter" role="group" aria-label="Show tides">
           {FILTERS.map((f) => (
             <button key={f.id} aria-pressed={show === f.id} onClick={() => setShow(f.id)}>
@@ -275,8 +349,9 @@ export default function YearTides({ station = defaultStation }) {
                       todayRef={dayKey(day.start) === todayKey ? todayRowRef : null}
                       temp={tempForDay(day, dayKey(day.start) === todayKey).temp}
                       isLiveTemp={tempForDay(day, dayKey(day.start) === todayKey).live}
+                      swell={swellForDay(day)}
                     />
-                    {dayKey(day.start) === todayKey && <SwellCard station={station} />}
+                    {dayKey(day.start) === todayKey && <SwellCard station={station} brk={brk} />}
                   </Fragment>
                 ))}
               </div>
@@ -371,7 +446,7 @@ function YearStrip({ days, yMin, yMax, todayKey, onPickMonth }) {
   );
 }
 
-function DayRow({ day, extremes, yMin, yMax, show, isToday, todayRef, temp, isLiveTemp }) {
+function DayRow({ day, extremes, yMin, yMax, show, isToday, todayRef, temp, isLiveTemp, swell }) {
   const events = show === "all" ? day.events : day.events.filter((e) => e.type === show);
   const dow = day.start.getDay();
   const className = ["day-row", isToday && "is-today", (dow === 0 || dow === 6) && "is-weekend"]
@@ -386,6 +461,16 @@ function DayRow({ day, extremes, yMin, yMax, show, isToday, todayRef, temp, isLi
         <span className={`day-temp${isLiveTemp ? " is-live" : ""}`}>
           {temp}°
         </span>
+        {swell && (
+          <span
+            className={`day-swell${swell.forecast ? " is-forecast" : ""}`}
+            title={`Biggest waves ${swell.forecast ? "forecast" : "modeled"}: ${swell.height.toFixed(1)} ft, ${
+              swell.period
+            }s from ${compassDir(swell.direction)}`}
+          >
+            {swell.height.toFixed(1)}ft {swell.period}s
+          </span>
+        )}
       </div>
       <DaySpark day={day} events={events} extremes={extremes} yMin={yMin} yMax={yMax} sunrise={day.sunrise} sunset={day.sunset} />
       <ol className="events">

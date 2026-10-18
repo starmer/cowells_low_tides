@@ -86,29 +86,67 @@ function parseOpendapAscii(text) {
   return out;
 }
 
-// Latest good reading from a CDIP dataset with waveTime/Hs/Tp/Dp variables
-// (a realtime buoy file or a MOP nowcast). Looks up the series length first,
-// then fetches only the last few records and takes the newest one that
-// passes CDIP's quality flag (1 = good).
-async function fetchCdipLatest(path) {
+async function cdipLength(path) {
   const dds = await (await fetch(`${THREDDS}/${path}.dds`)).text();
   const n = Number(dds.match(/waveTime\[waveTime = (\d+)\]/)?.[1]);
   if (!n) throw new Error(`No waveTime in ${path}`);
+  return n;
+}
 
-  const range = encodeURIComponent(`[${Math.max(0, n - 6)}:1:${n - 1}]`);
+// Records i0..i1 of a CDIP dataset with waveTime/Hs/Tp/Dp variables (a
+// realtime buoy file or a MOP point), keeping only those that pass CDIP's
+// quality flag (1 = good). Heights in feet, times in ms.
+async function cdipRecords(path, i0, i1) {
+  const range = encodeURIComponent(`[${i0}:1:${i1}]`);
   const vars = ["waveTime", "waveHs", "waveTp", "waveDp", "waveFlagPrimary"].map((v) => v + range).join(",");
   const d = parseOpendapAscii(await (await fetch(`${THREDDS}/${path}.ascii?${vars}`)).text());
+  const records = [];
+  (d.waveTime ?? []).forEach((t, i) => {
+    if (d.waveFlagPrimary[i] !== 1 || !(d.waveHs[i] > 0)) return;
+    records.push({ time: t * 1000, height: d.waveHs[i] * M_TO_FT, period: d.waveTp[i], direction: d.waveDp[i] });
+  });
+  return records;
+}
 
-  for (let i = d.waveTime.length - 1; i >= 0; i--) {
-    if (d.waveFlagPrimary[i] !== 1 || !(d.waveHs[i] > 0)) continue;
-    return {
-      time: d.waveTime[i] * 1000,
-      height: d.waveHs[i] * M_TO_FT,
-      period: d.waveTp[i],
-      direction: d.waveDp[i],
-    };
-  }
-  return null;
+// Latest good reading: fetch only the last few records.
+async function fetchCdipLatest(path) {
+  const n = await cdipLength(path);
+  const records = await cdipRecords(path, Math.max(0, n - 6), n - 1);
+  return records[records.length - 1] ?? null;
+}
+
+// Records between two times. MOP series are evenly spaced, so the index range
+// comes from the first two timestamps rather than downloading every time.
+async function fetchCdipRange(path, start, end) {
+  const n = await cdipLength(path);
+  const range = encodeURIComponent("[0:1:1]");
+  const first = parseOpendapAscii(await (await fetch(`${THREDDS}/${path}.ascii?waveTime${range}`)).text());
+  const [t0, t1] = first.waveTime.map((t) => t * 1000);
+  const step = t1 - t0;
+  const i0 = Math.max(0, Math.floor((start - t0) / step));
+  const i1 = Math.min(n - 1, Math.ceil((end - t0) / step));
+  if (i0 > i1) return [];
+  const records = await cdipRecords(path, i0, i1);
+  return records.filter((r) => r.time >= start && r.time < end);
+}
+
+function localDayKey(ms) {
+  const d = new Date(ms);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+// The biggest reading of each local day: { "YYYY-MM-DD": { height, period, direction } },
+// with the period and direction from that same hour. Heights rounded to 0.1 ft.
+function dailyMax(records) {
+  const days = {};
+  records.forEach(({ time, height, period, direction }) => {
+    const key = localDayKey(time);
+    if (!days[key] || height > days[key].height) {
+      days[key] = { height: Math.round(height * 10) / 10, period: Math.round(period), direction: Math.round(direction) };
+    }
+  });
+  return days;
 }
 
 // Modeled nearshore waves at a CDIP MOP point, e.g. "SC149".
@@ -119,4 +157,54 @@ export function fetchMopNowcast(pointId) {
 // Latest observed reading from a CDIP buoy, e.g. "156".
 export function fetchBuoyLatest(cdipId) {
   return cached(`buoy-${cdipId}`, () => fetchCdipLatest(`realtime/${cdipId}p1_rt.nc`));
+}
+
+// Daily max nearshore waves for a calendar year at a MOP point, up to now.
+// The hindcast covers 2000 to early 2025 and the nowcast everything since, so
+// both are asked for and whichever overlaps the year answers. Same caching as
+// water temps: past years are kept for good, the current year for a day.
+const DAILY_SWELL_CACHE_VERSION = 1;
+
+export async function fetchYearDailySwell(pointId, year) {
+  const thisYear = new Date().getFullYear();
+  if (year > thisYear) return null;
+
+  const key = `swell-daily-v${DAILY_SWELL_CACHE_VERSION}-${pointId}-${year}`;
+  const today = localDayKey(Date.now());
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      const { fetchedOn, days } = JSON.parse(raw);
+      if (year < thisYear || fetchedOn === today) return days;
+    }
+  } catch {}
+
+  const start = new Date(year, 0, 1).getTime();
+  const end = Math.min(new Date(year + 1, 0, 1).getTime(), Date.now());
+  const base = `model/MOP_alongshore/${pointId}`;
+  try {
+    const parts = await Promise.all([
+      fetchCdipRange(`${base}_hindcast.nc`, start, end),
+      fetchCdipRange(`${base}_nowcast.nc`, start, end),
+    ]);
+    const days = dailyMax(parts.flat());
+    try {
+      localStorage.setItem(key, JSON.stringify({ fetchedOn: today, days }));
+    } catch {}
+    return days;
+  } catch {
+    return null;
+  }
+}
+
+// Daily max from the MOP forecast (3-hourly, about a week ahead), today onward.
+export function fetchDailySwellForecast(pointId) {
+  return cached(`mop-fc-${pointId}`, async () => {
+    const path = `model/MOP_alongshore/${pointId}_forecast.nc`;
+    const n = await cdipLength(path);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const records = await cdipRecords(path, 0, n - 1);
+    return dailyMax(records.filter((r) => r.time >= today.getTime()));
+  });
 }

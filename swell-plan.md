@@ -61,10 +61,12 @@ GFS-Wave forecast · CDIP Monterey Canyon buoy
 
 ## Phase 2: swell on every day row
 
-- A compact `1.8ft 13s` (MOP nearshore daily max or mean) in the label column under the temp.
-- Past days: MOP hindcast/nowcast, grouped by day, cached permanently for past years and daily for the current year (same as `fetchYearDailyTemps`). That's one request per year of ~8760 points × 3 vars, a few hundred KB of ASCII.
-- Next ~10 days: MOP forecast. Days 11–16: Open-Meteo. After that: blank. Unlike water temp, we don't fill in climatology, because a made-up swell number would mislead.
-- Optional: tint or size the number by height so a big day stands out when scrolling the year.
+**Built.** Each row shows the day's **biggest** modeled wave height and its period (`2.6ft 18s`) under the temp. Hovering shows the direction too.
+
+- Past days: MOP hindcast (hourly, 2000 to 2025-03-31) and nowcast (hourly, 2025-04-01 to now), both asked for and merged, so any year since 2000 works. Cached for good for past years and for a day for the current year, same as water temps. About 16 KB per year in `localStorage`.
+- Today and the coming week: MOP forecast (3-hourly, ~6 days ahead), shown in italics. Today takes the bigger of the record so far and the forecast.
+- Past the forecast: blank. We dropped the "days 11–16 from Open-Meteo" idea: Open-Meteo is offshore and unsheltered, so its numbers would jump up next to the nearshore ones. And unlike water temp, no averages fill the gap, because a made-up swell number would mislead.
+- Still optional: tint or size the number by height so a big day stands out when scrolling the year.
 
 ## Phase 3: hourly swell chart (screenshot 2, later)
 
@@ -89,15 +91,16 @@ CDIP 156's spectrum (`waveEnergyDensity` + `waveMeanDirection` × 100 frequencie
 ## Todo
 
 - [x] **Basic swell card** (stripped-down Phase 1): Open-Meteo swell components, the MOP "at Cowell's" height, and the latest CDIP 156 reading.
-- [ ] **Break picker.** Add Steamer Lane, Indicators, Cowell's and others to `stations.js`, each with its own `mopPoint` (e.g. Lane → SC150, Indicators → SC151–153). They share the tide station, the water-temp station and CDIP 156. Confirm each break's point on a map first (see open question 3).
+- [x] **Break picker.** "Swell at" select in the toolbar, remembered per browser. Breaks live in `stations.js`: Cowell's SC149, Steamer Lane SC150, Indicators SC151, Mitchell's Cove SC159, Pleasure Point SC117, The Hook SC116. All share the tide station, the water-temp station and CDIP 156. Points were matched from coordinates; still worth confirming on a map (open question 3).
 - [ ] **NDBC 46042 via GitHub Actions.** A scheduled workflow (every 30–60 min) fetches `realtime2/46042.txt` and `.spec`, parses them into a small JSON file, and publishes it alongside the site. The page then reads its own file, so no proxy or CORS issue and still no server. Trade-offs: data up to ~1h stale (scheduled Actions can lag), plus a commit per run unless it publishes via Pages artifacts instead of committing. This would add the offshore "NW swell is coming" reading that matters most for the Lane and Indicators.
-- [ ] Phase 2: swell on every day row.
+- [x] Phase 2: swell on every day row, including history back to 2000.
 - [ ] Phase 3: hourly swell chart.
 - [ ] Observed swell partitions from the CDIP 156 spectrum.
-- [ ] Swell history (MOP hindcast) on past day rows.
+- [ ] Measured tide line: draw NOAA's measured water level (Monterey 9413450, `product=water_level`) over past days' predicted curves. A Kelvin wave in October 2026 ran Monterey 0.7–1.2 ft above predictions for days.
+- [ ] Optional: tint day-row swell by height.
 
 ## Open questions
 
-1. Where should the swell card live: under the today row, in the header, or in a slide-out panel?
-2. For the day rows, should the number be the daily max or the daily mean nearshore height?
-3. Confirm each break's MOP point on a map. SC149 sits just inside Lighthouse Point, and SC150 is directly off it (Steamer Lane). The 15m points are 0.5–2km out, so Cowell's, which is inside the 15m contour, may read higher than it really is. SC136–147 share identical coordinates in the metadata, which looks like a CDIP quirk.
+1. ~~Where should the swell card live?~~ Under the today row.
+2. ~~Daily max or mean?~~ Max.
+3. Confirm each break's MOP point on a map. SC149 sits just inside Lighthouse Point, and SC150 is directly off it (Steamer Lane). The 15m points are 0.5–2km out, so Cowell's, which is inside the 15m contour, may read higher than it really is. SC136–147 and SC155–157 share identical coordinates in the metadata, which looks like a CDIP quirk, so those points are avoided.

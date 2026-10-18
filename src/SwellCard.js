@@ -49,16 +49,25 @@ function Reading({ label, r, live }) {
   );
 }
 
-export default function SwellCard({ station }) {
+export default function SwellCard({ station, brk }) {
   const [components, setComponents] = useState(null);
   const [mop, setMop] = useState(null);
   const [buoy, setBuoy] = useState(null);
 
   useEffect(() => {
     fetchSwellComponents(station.lat, station.lon).then(setComponents).catch(() => setComponents([]));
-    if (station.mopPoint) fetchMopNowcast(station.mopPoint).then(setMop).catch(() => {});
     if (station.cdipBuoy) fetchBuoyLatest(station.cdipBuoy).then(setBuoy).catch(() => {});
-  }, [station.lat, station.lon, station.mopPoint, station.cdipBuoy]);
+  }, [station.lat, station.lon, station.cdipBuoy]);
+
+  // Switching breaks clears the old reading so it never shows under the new name.
+  useEffect(() => {
+    let cancelled = false;
+    setMop(null);
+    if (brk?.mopPoint) fetchMopNowcast(brk.mopPoint).then((r) => !cancelled && setMop(r)).catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [brk?.mopPoint]);
 
   if (components === null && !mop && !buoy) return null;
 
@@ -79,11 +88,11 @@ export default function SwellCard({ station }) {
         )}
       </div>
       <div className="swell-readings">
-        <Reading label={`At ${station.swellSpot ?? station.spot} (Modeled)`} r={mop} />
+        <Reading label={`At ${brk?.name ?? station.spot} (Modeled)`} r={mop} />
         <Reading label={`${station.cdipBuoyName ?? "CDIP"} buoy`} r={buoy} live />
         <div className="swell-explain" id="swell-explain" role="tooltip">
           <p>
-            <b>Modeled</b> is an estimate of the waves just off {station.swellSpot ?? station.spot}, worked out from
+            <b>Modeled</b> is an estimate of the waves just off {brk?.name ?? station.spot}, worked out from
             what's offshore. It accounts for the point blocking some of the swell, so it's usually smaller.
           </p>
           <p>
@@ -93,7 +102,7 @@ export default function SwellCard({ station }) {
         </div>
       </div>
       <p className="swell-source">
-        Swell: NOAA GFS-Wave via Open-Meteo. Nearshore: CDIP MOP {station.mopPoint}. Buoy: CDIP{" "}
+        Swell: NOAA GFS-Wave via Open-Meteo. Nearshore: CDIP MOP {brk?.mopPoint}. Buoy: CDIP{" "}
         {station.cdipBuoy}.
       </p>
     </section>
