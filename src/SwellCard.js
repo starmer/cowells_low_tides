@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { compassDir, fetchSwellComponents, fetchMopNowcast, fetchBuoyLatest } from "./swell";
+import { compassDir, fetchSwellHourly, componentsAt, fetchMopNowcast, fetchBuoyLatest } from "./swell";
 
 function formatTime(ms) {
   return new Date(ms)
@@ -10,7 +10,7 @@ function formatTime(ms) {
 
 // Points the way the swell is travelling: directions are "coming from", so
 // rotate a north-pointing triangle by direction + 180.
-function SwellArrow({ direction, rank }) {
+export function SwellArrow({ direction, rank }) {
   return (
     <svg className={`swell-arrow swell-${rank}`} viewBox="0 0 10 10" aria-hidden="true">
       <path d="M5 0.5 8.5 9.5 5 7.5 1.5 9.5z" transform={`rotate(${direction + 180} 5 5)`} />
@@ -19,7 +19,7 @@ function SwellArrow({ direction, rank }) {
 }
 
 // The first swell is the most significant and gets bold; wind swell never does.
-function ComponentList({ items }) {
+export function ComponentList({ items }) {
   return (
     <ul>
       {items.map((c, i) => (
@@ -39,7 +39,7 @@ function ComponentList({ items }) {
 function Reading({ label, r, live }) {
   if (!r) return null;
   return (
-    <div className={`swell-reading${live ? " is-live" : ""}`} tabIndex={0} aria-describedby="swell-explain">
+    <div className={`swell-reading${live ? " is-live" : ""}`}>
       <span className="swell-reading-label">{label}</span>
       <span className="swell-reading-value">
         {r.height.toFixed(1)}ft <span>{Math.round(r.period)}s</span> {compassDir(r.direction)}
@@ -55,7 +55,9 @@ export default function SwellCard({ station, brk }) {
   const [buoy, setBuoy] = useState(null);
 
   useEffect(() => {
-    fetchSwellComponents(station.lat, station.lon).then(setComponents).catch(() => setComponents([]));
+    fetchSwellHourly(station.lat, station.lon)
+      .then((hours) => setComponents(componentsAt(hours, Date.now()) ?? []))
+      .catch(() => setComponents([]));
     if (station.cdipBuoy) fetchBuoyLatest(station.cdipBuoy).then(setBuoy).catch(() => {});
   }, [station.lat, station.lon, station.cdipBuoy]);
 
@@ -90,16 +92,6 @@ export default function SwellCard({ station, brk }) {
       <div className="swell-readings">
         <Reading label={`At ${brk?.name ?? station.spot} (Modeled)`} r={mop} />
         <Reading label={`${station.cdipBuoyName ?? "CDIP"} buoy`} r={buoy} live />
-        <div className="swell-explain" id="swell-explain" role="tooltip">
-          <p>
-            <b>Modeled</b> is an estimate of the waves just off {brk?.name ?? station.spot}, worked out from
-            what's offshore. It accounts for the point blocking some of the swell, so it's usually smaller.
-          </p>
-          <p>
-            <b>Buoy</b> is a real measurement from open water at the mouth of Monterey Bay. It sees all the swell
-            before anything blocks it.
-          </p>
-        </div>
       </div>
       <p className="swell-source">
         Swell: NOAA GFS-Wave via Open-Meteo. Nearshore: CDIP MOP {brk?.mopPoint}. Buoy: CDIP{" "}

@@ -34,11 +34,13 @@ export function compassDir(deg) {
   return dirs[Math.round(deg / 22.5) % 16];
 }
 
-// Swell components for the current hour, most significant first. Ranked by
-// H²·T, a rough stand-in for wave energy, so a small long-period swell can
-// outrank a taller short-period one (the way Surfline ranks them).
-export function fetchSwellComponents(lat, lon) {
-  return cached(`om-${lat}-${lon}`, async () => {
+// Offshore swell components for every hour of the next 10 days:
+// [{ time, components }], where components are the swells most significant
+// first, then wind swell. Ranked by H²·T, a rough stand-in for wave energy,
+// so a small long-period swell can outrank a taller short-period one (the
+// way Surfline ranks them). Components under half a foot are dropped.
+export function fetchSwellHourly(lat, lon) {
+  return cached(`om-hourly-${lat}-${lon}`, async () => {
     const parts = ["swell_wave", "secondary_swell_wave", "tertiary_swell_wave", "wind_wave"];
     const params = new URLSearchParams({
       latitude: lat,
@@ -47,24 +49,34 @@ export function fetchSwellComponents(lat, lon) {
       hourly: parts.flatMap((p) => [`${p}_height`, `${p}_period`, `${p}_direction`]).join(","),
       length_unit: "imperial",
       timezone: "America/Los_Angeles",
-      forecast_days: 1,
+      forecast_days: 10,
     });
     const response = await fetch(`https://marine-api.open-meteo.com/v1/marine?${params}`);
     const json = await response.json();
     if (json.error) throw new Error(json.reason);
 
-    const hour = new Date().getHours();
     const h = json.hourly;
-    return parts
-      .map((p) => ({
-        height: h[`${p}_height`][hour],
-        period: h[`${p}_period`][hour],
-        direction: h[`${p}_direction`][hour],
-        wind: p === "wind_wave",
-      }))
-      .filter((c) => c.height != null && c.period != null && c.direction != null && c.height >= 0.5)
-      .sort((a, b) => a.wind - b.wind || b.height ** 2 * b.period - a.height ** 2 * a.period);
+    return h.time.map((t, i) => {
+      // "YYYY-MM-DDTHH:MM" in Pacific time, kept as local time like the tides.
+      const [y, mo, d, hr] = t.split(/[-T:]/).map(Number);
+      const components = parts
+        .map((p) => ({
+          height: h[`${p}_height`][i],
+          period: h[`${p}_period`][i],
+          direction: h[`${p}_direction`][i],
+          wind: p === "wind_wave",
+        }))
+        .filter((c) => c.height != null && c.period != null && c.direction != null && c.height >= 0.5)
+        .sort((a, b) => a.wind - b.wind || b.height ** 2 * b.period - a.height ** 2 * a.period);
+      return { time: new Date(y, mo - 1, d, hr).getTime(), components };
+    });
   });
+}
+
+// Components for the hour containing `ms`, or null outside the forecast.
+export function componentsAt(hours, ms) {
+  const hour = hours.find((h) => ms >= h.time && ms < h.time + 3600000);
+  return hour ? hour.components : null;
 }
 
 // OPeNDAP's ASCII response: a header, a dashed line, then one block per
@@ -138,7 +150,7 @@ function localDayKey(ms) {
 
 // The biggest reading of each local day: { "YYYY-MM-DD": { height, period, direction } },
 // with the period and direction from that same hour. Heights rounded to 0.1 ft.
-function dailyMax(records) {
+export function dailyMax(records) {
   const days = {};
   records.forEach(({ time, height, period, direction }) => {
     const key = localDayKey(time);
@@ -197,14 +209,14 @@ export async function fetchYearDailySwell(pointId, year) {
   }
 }
 
-// Daily max from the MOP forecast (3-hourly, about a week ahead), today onward.
-export function fetchDailySwellForecast(pointId) {
-  return cached(`mop-fc-${pointId}`, async () => {
+// MOP forecast records (3-hourly, about a week ahead) from the start of today.
+export function fetchMopForecast(pointId) {
+  return cached(`mop-fc-records-${pointId}`, async () => {
     const path = `model/MOP_alongshore/${pointId}_forecast.nc`;
     const n = await cdipLength(path);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const records = await cdipRecords(path, 0, n - 1);
-    return dailyMax(records.filter((r) => r.time >= today.getTime()));
+    return records.filter((r) => r.time >= today.getTime());
   });
 }

@@ -427,7 +427,7 @@ button {
 
 .day-row {
   display: grid;
-  grid-template-columns: 64px 200px 1fr;
+  grid-template-columns: 92px 200px 1fr;
   align-items: center;
   gap: 16px;
   min-height: 36px;
@@ -522,6 +522,130 @@ button {
 
 .day-swell.is-forecast {
   font-style: italic;
+}
+
+.day-swell .swell-arrow {
+  width: 9px;
+  height: 9px;
+  margin: 0 1px 0 3px;
+  vertical-align: -0.5px;
+}
+
+.is-today .day-swell .swell-arrow {
+  width: 10px;
+  height: 10px;
+}
+
+/* On forecast days the swell number opens that day's detail. */
+.day-swell.is-toggle {
+  justify-self: end;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.day-swell.is-toggle:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.day-swell.is-toggle[aria-expanded="true"] {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.day-swell-caret {
+  font-style: normal;
+  font-size: 9px;
+  color: var(--muted);
+}
+
+/* Expanded day: one line per forecast time. */
+.day-swell-detail {
+  margin: 4px 0 12px;
+  padding: 12px 20px 10px;
+  background: var(--surface);
+  border-radius: 14px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dsw-head,
+.dsw-row {
+  display: grid;
+  grid-template-columns: 40px 150px minmax(0, 1fr) 130px;
+  align-items: center;
+  gap: 4px 16px;
+}
+
+.dsw-head {
+  padding-bottom: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.dsw-row {
+  padding: 5px 0;
+  box-shadow: inset 0 1px 0 var(--grid);
+}
+
+.dsw-time {
+  color: var(--muted);
+}
+
+.dsw-near {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.dsw-near span {
+  font-weight: 400;
+  color: var(--ink-2);
+}
+
+.dsw-near .dsw-none {
+  color: var(--muted);
+}
+
+.dsw-swells,
+.dsw-wind {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+}
+
+.dsw-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.dsw-chip .swell-arrow {
+  width: 11px;
+  height: 11px;
+}
+
+.dsw-chip.is-wind {
+  color: var(--muted);
+}
+
+.dsw-empty {
+  margin: 0;
+  color: var(--muted);
+}
+
+.day-swell-detail .swell-source {
+  margin-top: 8px;
 }
 
 .is-today .day-swell {
@@ -764,12 +888,7 @@ button {
   padding-top: 22px;
 }
 
-.swell-readings {
-  position: relative;
-}
-
 .swell-reading {
-  cursor: help;
   display: grid;
   grid-template-columns: max-content max-content;
   align-items: baseline;
@@ -777,10 +896,7 @@ button {
 }
 
 .swell-reading-label {
-  justify-self: start;
   grid-column: 1 / -1;
-  text-decoration: underline dotted;
-  text-underline-offset: 3px;
   font-size: 12px;
   color: var(--muted);
 }
@@ -805,47 +921,6 @@ button {
   color: var(--muted);
 }
 
-/* One explanation for both readings: shown while either is hovered or
-   focused (a tap focuses it on touch screens). */
-.swell-explain {
-  display: none;
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  z-index: 4;
-  width: min(320px, 100%);
-  padding: 10px 12px;
-  font-size: 13px;
-  line-height: 1.4;
-  background: var(--ink);
-  color: var(--bg);
-  border-radius: 8px;
-  box-shadow: 0 4px 14px var(--shadow);
-}
-
-.swell-explain p {
-  margin: 0;
-}
-
-.swell-explain p + p {
-  margin-top: 6px;
-}
-
-.swell-reading:hover ~ .swell-explain,
-.swell-reading:focus ~ .swell-explain {
-  display: block;
-}
-
-.swell-reading:focus {
-  outline: none;
-}
-
-.swell-reading:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
 .swell-source {
   grid-column: 1 / -1;
   margin: 0;
@@ -854,6 +929,25 @@ button {
 }
 
 @media (max-width: 640px) {
+  .day-swell-detail {
+    padding: 10px 14px 8px;
+  }
+
+  .dsw-head {
+    display: none;
+  }
+
+  /* Time and modeled height on one line, swells and wind swell below. */
+  .dsw-row {
+    grid-template-columns: 40px 1fr;
+  }
+
+  .dsw-swells,
+  .dsw-wind {
+    grid-column: 2;
+    font-size: 13px;
+  }
+
   .swell-card {
     grid-template-columns: 1fr;
     padding: 14px 14px 10px;
@@ -915,7 +1009,7 @@ button {
 /* Below this the curve and four tide cells no longer fit on one line. */
 @media (max-width: 920px) {
   .day-row {
-    grid-template-columns: 56px 1fr;
+    grid-template-columns: 92px 1fr;
     gap: 4px 12px;
     padding-top: 6px;
     padding-bottom: 6px;

@@ -1,8 +1,9 @@
 import { Fragment, useState, useEffect, useMemo, useRef } from "react";
 import { defaultStation } from "./stations";
 import { fetchYearExtremes, heightAt, sunTimes, fetchYearDailyTemps } from "./tides";
-import SwellCard from "./SwellCard";
-import { fetchYearDailySwell, fetchDailySwellForecast, compassDir } from "./swell";
+import SwellCard, { SwellArrow } from "./SwellCard";
+import DaySwell from "./DaySwell";
+import { fetchYearDailySwell, fetchMopForecast, fetchSwellHourly, dailyMax, compassDir } from "./swell";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -36,6 +37,7 @@ function isoDay(d) {
 }
 
 const BREAK_KEY = "swell-break";
+const SWELL_DETAIL_DAYS = 10; // upper limit on how many days ahead can be expanded
 
 function savedBreak(station) {
   let id = null;
@@ -75,7 +77,10 @@ export default function YearTides({ station = defaultStation }) {
   const [prevYearTemps, setPrevYearTemps] = useState({}); // last year: same
   const [brk, setBrk] = useState(() => savedBreak(station));
   const [dailySwell, setDailySwell] = useState({});       // "YYYY-MM-DD" → { height, period, direction }
-  const [swellForecast, setSwellForecast] = useState({}); // today onward, same shape
+  const [mopForecast, setMopForecast] = useState([]);     // 3-hourly records, today onward
+  const [swellHours, setSwellHours] = useState(null);     // offshore components, hourly, next 10 days
+  const [openSwellDay, setOpenSwellDay] = useState(null); // "YYYY-MM-DD" of the expanded day
+  const swellForecast = useMemo(() => dailyMax(mopForecast), [mopForecast]);
 
   const pickBreak = (id) => {
     const next = station.breaks.find((b) => b.id === id);
@@ -98,16 +103,30 @@ export default function YearTides({ station = defaultStation }) {
 
   useEffect(() => {
     let cancelled = false;
-    setSwellForecast({});
+    setMopForecast([]);
     if (brk) {
-      fetchDailySwellForecast(brk.mopPoint)
-        .then((d) => !cancelled && setSwellForecast(d ?? {}))
+      fetchMopForecast(brk.mopPoint)
+        .then((r) => !cancelled && setMopForecast(r ?? []))
         .catch(() => {});
     }
     return () => {
       cancelled = true;
     };
   }, [brk]);
+
+  useEffect(() => {
+    fetchSwellHourly(station.lat, station.lon).then(setSwellHours).catch(() => {});
+  }, [station.lat, station.lon]);
+
+  // Today and coming days can open a detail panel under their row, as far as
+  // the nearshore forecast reaches (about a week), capped at 10 days.
+  const detailStart = new Date();
+  detailStart.setHours(0, 0, 0, 0);
+  const detailEnd = new Date(detailStart);
+  detailEnd.setDate(detailEnd.getDate() + SWELL_DETAIL_DAYS);
+  const canExpand = (day) =>
+    day.start >= detailStart && day.start < detailEnd && swellForecast[isoDay(day.start)] != null;
+  const toggleSwellDay = (key) => setOpenSwellDay((open) => (open === key ? null : key));
 
   // Live reading for today.
   useEffect(() => {
@@ -350,8 +369,13 @@ export default function YearTides({ station = defaultStation }) {
                       temp={tempForDay(day, dayKey(day.start) === todayKey).temp}
                       isLiveTemp={tempForDay(day, dayKey(day.start) === todayKey).live}
                       swell={swellForDay(day)}
+                      swellOpen={openSwellDay === isoDay(day.start)}
+                      onToggleSwell={canExpand(day) && brk ? () => toggleSwellDay(isoDay(day.start)) : null}
                     />
                     {dayKey(day.start) === todayKey && <SwellCard station={station} brk={brk} />}
+                    {openSwellDay === isoDay(day.start) && canExpand(day) && brk && (
+                      <DaySwell day={day} brk={brk} mopRecords={mopForecast} hours={swellHours} />
+                    )}
                   </Fragment>
                 ))}
               </div>
@@ -446,7 +470,7 @@ function YearStrip({ days, yMin, yMax, todayKey, onPickMonth }) {
   );
 }
 
-function DayRow({ day, extremes, yMin, yMax, show, isToday, todayRef, temp, isLiveTemp, swell }) {
+function DayRow({ day, extremes, yMin, yMax, show, isToday, todayRef, temp, isLiveTemp, swell, swellOpen, onToggleSwell }) {
   const events = show === "all" ? day.events : day.events.filter((e) => e.type === show);
   const dow = day.start.getDay();
   const className = ["day-row", isToday && "is-today", (dow === 0 || dow === 6) && "is-weekend"]
@@ -461,16 +485,7 @@ function DayRow({ day, extremes, yMin, yMax, show, isToday, todayRef, temp, isLi
         <span className={`day-temp${isLiveTemp ? " is-live" : ""}`}>
           {temp}°
         </span>
-        {swell && (
-          <span
-            className={`day-swell${swell.forecast ? " is-forecast" : ""}`}
-            title={`Biggest waves ${swell.forecast ? "forecast" : "modeled"}: ${swell.height.toFixed(1)} ft, ${
-              swell.period
-            }s from ${compassDir(swell.direction)}`}
-          >
-            {swell.height.toFixed(1)}ft {swell.period}s
-          </span>
-        )}
+        {swell && <DaySwellLabel swell={swell} open={swellOpen} onToggle={onToggleSwell} />}
       </div>
       <DaySpark day={day} events={events} extremes={extremes} yMin={yMin} yMax={yMax} sunrise={day.sunrise} sunset={day.sunset} />
       <ol className="events">
@@ -484,6 +499,29 @@ function DayRow({ day, extremes, yMin, yMax, show, isToday, todayRef, temp, isLi
         ))}
       </ol>
     </div>
+  );
+}
+
+// The day's biggest modeled waves, e.g. "2.9ft 18s SSW". On forecast days
+// it's a button that opens that day's swell detail.
+function DaySwellLabel({ swell, open, onToggle }) {
+  // Same arrow as the swell card, in the primary swell color.
+  const text = (
+    <>
+      {swell.height.toFixed(1)}ft {swell.period}s
+      <SwellArrow direction={swell.direction} rank={1} />
+      {compassDir(swell.direction)}
+    </>
+  );
+  const className = ["day-swell", swell.forecast && "is-forecast"].filter(Boolean).join(" ");
+  if (!onToggle) return <span className={className}>{text}</span>;
+  return (
+    <button className={`${className} is-toggle`} aria-expanded={open} onClick={onToggle}>
+      {text}
+      <span className="day-swell-caret" aria-hidden="true">
+        {open ? "▴" : "▾"}
+      </span>
+    </button>
   );
 }
 
