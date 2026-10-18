@@ -92,12 +92,86 @@ CDIP 156's spectrum (`waveEnergyDensity` + `waveMeanDirection` × 100 frequencie
 
 - [x] **Basic swell card** (stripped-down Phase 1): Open-Meteo swell components, the MOP "at Cowell's" height, and the latest CDIP 156 reading.
 - [x] **Break picker.** "Swell at" select in the toolbar, remembered per browser. Breaks live in `stations.js`: Cowell's SC149, Steamer Lane SC150, Indicators SC151, Mitchell's Cove SC159, Pleasure Point SC117, The Hook SC116, Davenport Landing SC271. All share the tide station, the water-temp station and CDIP 156. Points were matched from coordinates; still worth confirming on a map (open question 3).
-- [ ] **NDBC 46042 via GitHub Actions.** A scheduled workflow (every 30–60 min) fetches `realtime2/46042.txt` and `.spec`, parses them into a small JSON file, and publishes it alongside the site. The page then reads its own file, so no proxy or CORS issue and still no server. Trade-offs: data up to ~1h stale (scheduled Actions can lag), plus a commit per run unless it publishes via Pages artifacts instead of committing. This would add the offshore "NW swell is coming" reading that matters most for the Lane and Indicators.
+- [x] **NDBC 46042 via GitHub Actions**, 4 times a day. See "Plan: buoy 46042 via GitHub Actions" below.
 - [x] Phase 2: swell on every day row, including history back to 2000.
 - [ ] Phase 3: hourly swell chart.
 - [ ] Observed swell partitions from the CDIP 156 spectrum.
 - [ ] Measured tide line: draw NOAA's measured water level (Monterey 9413450, `product=water_level`) over past days' predicted curves. A Kelvin wave in October 2026 ran Monterey 0.7–1.2 ft above predictions for days.
 - [ ] Optional: tint day-row swell by height.
+
+## Plan: buoy 46042 via GitHub Actions
+
+Goal: show the offshore Monterey buoy (NDBC 46042, 27 nm out) next to the Monterey Canyon buoy. It sees NW swell before the coast blocks it, which matters most for the Lane, Indicators and Davenport. NDBC doesn't let web pages read its files directly (no CORS header), so a scheduled GitHub Action fetches the data and saves it where the page can read it.
+
+Cost: free. The repo is public, and GitHub-hosted runners are free with no minute limit for public repos. Each run takes well under a minute.
+
+### Schedule
+
+Four runs a day: `cron: "17 0,6,12,18 * * *"` (UTC).
+
+| UTC | Summer (PDT) | Winter (PST) |
+|---|---|---|
+| 12:17 | 5:17a | 4:17a |
+| 18:17 | 11:17a | 10:17a |
+| 00:17 | 5:17p | 4:17p |
+| 06:17 | 11:17p | 10:17p |
+
+- The early-morning run lands before first light, so a dawn check has fresh numbers.
+- Minute 17 rather than :00, because GitHub delays jobs most at the top of the hour. Expect starts 5–30 min late anyway.
+- Also `workflow_dispatch`, so it can be run by hand from the Actions tab.
+
+### What it fetches
+
+- `https://www.ndbc.noaa.gov/data/realtime2/46042.txt`: wave height (WVHT), dominant and average period (DPD/APD), mean wave direction (MWD), wind (WDIR/WSPD/GST), water temperature (WTMP), every 10 min for the last 45 days.
+- `46042.spec`: the swell vs wind-wave split. Today it's all `MM` (missing) for 46042, so store it when present and don't rely on it.
+
+### What it writes
+
+A small JSON file, `ndbc-46042.json`:
+
+```json
+{
+  "station": "46042",
+  "fetchedAt": "2026-10-18T12:17:40Z",
+  "latest": { "time": "...", "heightFt": 7.2, "periodS": 12, "avgPeriodS": 6.2, "directionDeg": 318,
+              "windKt": 17, "windDirDeg": 320, "waterTempF": 66 },
+  "series": [ { "time": "...", "heightFt": 7.2, "periodS": 12, "directionDeg": 318 } ]
+}
+```
+
+- `latest` is the newest row with a valid wave height. Rows can have height but `MM` period; take each field from the newest row that has it, within an hour.
+- `series` holds hourly values for the last 48 hours, enough to show whether the swell is building or dropping.
+- Units are converted in the script (m → ft, m/s → kt, °C → °F), so the page does no parsing.
+
+### Where it lives
+
+A separate `data` branch, read via `https://raw.githubusercontent.com/starmer/cowells_low_tides/data/ndbc-46042.json`.
+
+- I checked: raw.githubusercontent.com sends `Access-Control-Allow-Origin: *` and caches for 5 minutes, so the page can read it directly.
+- Not the `gh-pages` branch: `npm run deploy` replaces that branch's contents each time, which would wipe the file until the next run.
+- Not `main`: four automated commits a day would clutter the history, and the file wouldn't be live until the next deploy anyway.
+- Each run commits only when the data changed. The commits also count as repo activity, which keeps GitHub from switching off the schedule after 60 quiet days.
+
+### Files
+
+- `scripts/fetch-ndbc.mjs`: plain Node 24 (built-in `fetch`, no dependencies). It downloads, parses, converts, and writes the JSON. It exits with an error, writing nothing, if NDBC is down or no row has a wave height, so a bad run never replaces good data.
+- `.github/workflows/ndbc.yml`: schedule plus `workflow_dispatch`, `permissions: contents: write`, checks out `main` for the script and the `data` branch into a subfolder, runs the script, commits and pushes if the file changed.
+- `src/swell.js`: `fetchNdbc(stationId)` reading the raw URL, cached 30 min like the other swell data.
+- `src/SwellCard.js`: a third reading, "Monterey offshore buoy (46042)", with height, period, direction and the reading's time.
+
+### Staleness
+
+With 4 runs a day the reading can be up to ~6.5 hours old. The card always shows its time, and greys it out past 8 hours; past 24 hours (e.g. the schedule got switched off) it's hidden. The series trend stays useful even when the latest point is a few hours old.
+
+### Steps
+
+1. Write and test `scripts/fetch-ndbc.mjs` locally against live NDBC data.
+2. Create the `data` branch and commit a first JSON from the local run.
+3. Add the workflow, push, trigger it once by hand, and check that it commits.
+4. Add the page side (fetch plus card reading), verify, deploy.
+5. Check the next couple of scheduled runs in the Actions tab.
+
+Later, if wanted: more NDBC stations in the same run (the script takes a list), a 48-hour trend line, or feeding 46042 into the best-times ratings for NW-facing breaks.
 
 ## Open questions
 

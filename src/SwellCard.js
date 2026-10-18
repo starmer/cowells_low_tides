@@ -1,11 +1,20 @@
 import { useState, useEffect } from "react";
-import { compassDir, fetchSwellHourly, componentsAt, fetchMopNowcast, fetchBuoyLatest } from "./swell";
+import { compassDir, fetchSwellHourly, componentsAt, fetchMopNowcast, fetchBuoyLatest, fetchNdbc } from "./swell";
 
+// The offshore buoy only updates four times a day: grey it out past this,
+// and drop it entirely if the data stops coming (e.g. the schedule stopped).
+const STALE_MS = 8 * 3600 * 1000;
+const GONE_MS = 24 * 3600 * 1000;
+
+// "4:30p", or "Sat 11:50p" when it isn't from today.
 function formatTime(ms) {
-  return new Date(ms)
+  const d = new Date(ms);
+  const time = d
     .toLocaleTimeString("en-us", { hour: "numeric", minute: "2-digit" })
     .replace(" AM", "a")
     .replace(" PM", "p");
+  if (d.toDateString() === new Date().toDateString()) return time;
+  return `${d.toLocaleDateString("en-us", { weekday: "short" })} ${time}`;
 }
 
 // Points the way the swell is travelling: directions are "coming from", so
@@ -36,10 +45,10 @@ export function ComponentList({ items }) {
   );
 }
 
-function Reading({ label, r, live }) {
+function Reading({ label, r, live, stale }) {
   if (!r) return null;
   return (
-    <div className={`swell-reading${live ? " is-live" : ""}`}>
+    <div className={`swell-reading${live && !stale ? " is-live" : ""}${stale ? " is-stale" : ""}`}>
       <span className="swell-reading-label">{label}</span>
       <span className="swell-reading-value">
         {r.height.toFixed(1)}ft <span>{Math.round(r.period)}s</span> {compassDir(r.direction)}
@@ -53,13 +62,17 @@ export default function SwellCard({ station, brk }) {
   const [components, setComponents] = useState(null);
   const [mop, setMop] = useState(null);
   const [buoy, setBuoy] = useState(null);
+  const [offshore, setOffshore] = useState(null);
 
   useEffect(() => {
     fetchSwellHourly(station.lat, station.lon)
       .then((hours) => setComponents(componentsAt(hours, Date.now()) ?? []))
       .catch(() => setComponents([]));
     if (station.cdipBuoy) fetchBuoyLatest(station.cdipBuoy).then(setBuoy).catch(() => {});
-  }, [station.lat, station.lon, station.cdipBuoy]);
+    if (station.ndbcBuoy) fetchNdbc(station.ndbcBuoy).then(setOffshore).catch(() => {});
+  }, [station.lat, station.lon, station.cdipBuoy, station.ndbcBuoy]);
+
+  const offshoreAge = offshore ? Date.now() - offshore.time : Infinity;
 
   // Switching breaks clears the old reading so it never shows under the new name.
   useEffect(() => {
@@ -92,10 +105,19 @@ export default function SwellCard({ station, brk }) {
       <div className="swell-readings">
         <Reading label={`At ${brk?.name ?? station.spot} (Modeled)`} r={mop} />
         <Reading label={`${station.cdipBuoyName ?? "CDIP"} buoy`} r={buoy} live />
+        {offshoreAge < GONE_MS && (
+          <Reading
+            label={`${station.ndbcBuoyName ?? "NDBC"} buoy`}
+            r={offshore}
+            live
+            stale={offshoreAge > STALE_MS}
+          />
+        )}
       </div>
       <p className="swell-source">
-        Swell: NOAA GFS-Wave via Open-Meteo. Nearshore: CDIP MOP {brk?.mopPoint}. Buoy: CDIP{" "}
-        {station.cdipBuoy}.
+        Swell: NOAA GFS-Wave via Open-Meteo. Nearshore: CDIP MOP {brk?.mopPoint}. Buoys: CDIP{" "}
+        {station.cdipBuoy}
+        {station.ndbcBuoy && `, NDBC ${station.ndbcBuoy} (updated 4× a day)`}.
       </p>
     </section>
   );

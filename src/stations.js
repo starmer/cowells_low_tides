@@ -15,6 +15,9 @@ export const stations = [
     lon: -122.0218,
     cdipBuoy: "156",
     cdipBuoyName: "Monterey Canyon",
+    // Offshore buoy 27 nm out, via the GitHub Action (see swell-plan.md).
+    ndbcBuoy: "46042",
+    ndbcBuoyName: "Monterey offshore",
     breaks: [
       { id: "cowells", name: "Cowell's", mopPoint: "SC149", lat: 36.962, lon: -122.023 },
       { id: "steamer-lane", name: "Steamer Lane", mopPoint: "SC150", lat: 36.951, lon: -122.026 },

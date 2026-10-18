@@ -1116,6 +1116,11 @@ button {
   color: var(--accent);
 }
 
+.swell-reading.is-stale .swell-reading-value,
+.swell-reading.is-stale .swell-reading-value span {
+  color: var(--muted);
+}
+
 .swell-reading-time {
   font-size: 11px;
   color: var(--muted);

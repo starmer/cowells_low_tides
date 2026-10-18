@@ -248,3 +248,25 @@ export function fetchWindHourly(lat, lon) {
     });
   });
 }
+
+// NDBC buoy data, fetched four times a day by a GitHub Action (NDBC has no
+// CORS headers) and read from the repo's `data` branch. Returns the latest
+// reading as { time, height, period, direction } like the CDIP readings,
+// plus the file's other fields.
+const NDBC_DATA = "https://raw.githubusercontent.com/starmer/cowells_low_tides/data";
+
+export function fetchNdbc(stationId) {
+  return cached(`ndbc-${stationId}`, async () => {
+    const response = await fetch(`${NDBC_DATA}/ndbc-${stationId}.json`);
+    if (!response.ok) throw new Error(`ndbc-${stationId}: HTTP ${response.status}`);
+    const json = await response.json();
+    const l = json.latest;
+    return {
+      ...json,
+      time: Date.parse(l.time),
+      height: l.heightFt,
+      period: l.periodS,
+      direction: l.directionDeg,
+    };
+  });
+}
