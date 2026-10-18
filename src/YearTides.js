@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { Fragment, useState, useEffect, useMemo, useRef } from "react";
 import { defaultStation } from "./stations";
 import { fetchYearExtremes, heightAt, sunTimes, fetchYearDailyTemps } from "./tides";
+import SwellCard from "./SwellCard";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -179,6 +180,28 @@ export default function YearTides({ station = defaultStation }) {
     monthRefs.current[m]?.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
   };
 
+  const scrollToToday = () => {
+    const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    todayRowRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "center" });
+  };
+
+  // From another year, switch back first and scroll once today's row renders.
+  const wantsToday = useRef(false);
+  const jumpToToday = () => {
+    if (shownYear === thisYear && todayRowRef.current) {
+      scrollToToday();
+    } else {
+      wantsToday.current = true;
+      setYear(thisYear);
+    }
+  };
+
+  useEffect(() => {
+    if (!wantsToday.current || !todayRowRef.current) return;
+    wantsToday.current = false;
+    scrollToToday();
+  });
+
   return (
     <div className="year">
       <header className="year-head">
@@ -241,24 +264,30 @@ export default function YearTides({ station = defaultStation }) {
                   </div>
                 </div>
                 {month.days.map((day) => (
-                  <DayRow
-                    key={day.start.getTime()}
-                    day={day}
-                    extremes={data.extremes}
-                    yMin={yMin}
-                    yMax={yMax}
-                    show={show}
-                    isToday={dayKey(day.start) === todayKey}
-                    todayRef={dayKey(day.start) === todayKey ? todayRowRef : null}
-                    temp={tempForDay(day, dayKey(day.start) === todayKey).temp}
-                    isLiveTemp={tempForDay(day, dayKey(day.start) === todayKey).live}
-                  />
+                  <Fragment key={day.start.getTime()}>
+                    <DayRow
+                      day={day}
+                      extremes={data.extremes}
+                      yMin={yMin}
+                      yMax={yMax}
+                      show={show}
+                      isToday={dayKey(day.start) === todayKey}
+                      todayRef={dayKey(day.start) === todayKey ? todayRowRef : null}
+                      temp={tempForDay(day, dayKey(day.start) === todayKey).temp}
+                      isLiveTemp={tempForDay(day, dayKey(day.start) === todayKey).live}
+                    />
+                    {dayKey(day.start) === todayKey && <SwellCard station={station} />}
+                  </Fragment>
                 ))}
               </div>
             </section>
           ))}
         </div>
       )}
+
+      <button className="today-btn" onClick={jumpToToday}>
+        Today
+      </button>
     </div>
   );
 }
