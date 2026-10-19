@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/cowells_low_tides/static/css/main.fab02c84.css",
-    "main.js": "/cowells_low_tides/static/js/main.8b78a545.js",
+    "main.js": "/cowells_low_tides/static/js/main.c61345f8.js",
     "index.html": "/cowells_low_tides/index.html",
     "main.fab02c84.css.map": "/cowells_low_tides/static/css/main.fab02c84.css.map",
-    "main.8b78a545.js.map": "/cowells_low_tides/static/js/main.8b78a545.js.map"
+    "main.c61345f8.js.map": "/cowells_low_tides/static/js/main.c61345f8.js.map"
   },
   "entrypoints": [
     "static/css/main.fab02c84.css",
-    "static/js/main.8b78a545.js"
+    "static/js/main.c61345f8.js"
   ]
 }
