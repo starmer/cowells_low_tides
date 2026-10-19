@@ -91,7 +91,7 @@ CDIP 156's spectrum (`waveEnergyDensity` + `waveMeanDirection` × 100 frequencie
 ## Todo
 
 - [x] **Basic swell card** (stripped-down Phase 1): Open-Meteo swell components, the MOP "at Cowell's" height, and the latest CDIP 156 reading.
-- [x] **Break picker.** "Swell at" select in the toolbar, remembered per browser. Breaks live in `stations.js`: Cowell's SC149, Steamer Lane SC150, Indicators SC151, Mitchell's Cove SC159, Pleasure Point SC117, The Hook SC116, Davenport Landing SC271. All share the tide station, the water-temp station and CDIP 156. Points were matched from coordinates; still worth confirming on a map (open question 3).
+- [x] **Break picker.** "Swell at" select in the toolbar, remembered per browser. Breaks live in `stations.js`: Cowell's SC149, Steamer Lane SC150, Indicators SC151, Pleasure Point SC117, Davenport Landing SC271. (Mitchell's Cove and The Hook were tried and removed.) All share the tide station, the water-temp station and CDIP 156. Points were matched from coordinates; still worth confirming on a map (open question 3).
 - [x] **NDBC 46042 via GitHub Actions**, 4 times a day. See "Plan: buoy 46042 via GitHub Actions" below.
 - [x] Phase 2: swell on every day row, including history back to 2000.
 - [ ] Phase 3: hourly swell chart.

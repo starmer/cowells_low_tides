@@ -47,26 +47,12 @@ export const BREAK_PREFS = {
     wind: ["NE", "NNE", "N", "NNW", "NW"],
     bigTide: 5, bigSwell: 8,
   },
-  mitchells: {
-    tide: { best: [-2, 2.5], ok: [-2, 3.5], rising: true },
-    size: { best: [3, 12], ok: [2, 16] },
-    swell: { best: ["W", "WNW", "NW"], ok: ["SW", "WSW", "NNW"] },
-    wind: ["NE", "NNE", "N", "NNW", "NW"],
-    bigTide: 5, bigSwell: 8,
-  },
   "pleasure-point": {
     tide: { best: [2, 4.5], ok: [0.5, 5], rising: true },
     size: { best: [3, 12], ok: [2, 15] },
     swell: { best: ["SSW", "SW", "WSW", "W", "WNW"], ok: ["S", "NW"] },
     wind: ["NE", "NNE", "N", "NNW", "NW"],
     bigTide: 5, bigSwell: 8,
-  },
-  "the-hook": {
-    tide: { best: [2, 4.5], ok: [1, 5], rising: true },
-    size: { best: [2.5, 8], ok: [1.5, 10] },
-    swell: { best: ["S", "W", "NW"], ok: ["SSW", "SW", "WSW", "WNW"] },
-    wind: ["E", "ENE", "NW", "NNW"],
-    bigTide: 5, bigSwell: 7,
   },
   "davenport-landing": {
     tide: { best: [3, 5.5], ok: [2, 6] },
