@@ -161,7 +161,7 @@ A separate `data` branch, read via `https://raw.githubusercontent.com/starmer/co
 
 ### Staleness
 
-With 4 runs a day the reading can be up to ~6.5 hours old. The card always shows its time, and greys it out past 8 hours; past 24 hours (e.g. the schedule got switched off) it's hidden. The series trend stays useful even when the latest point is a few hours old.
+With 4 runs a day the reading was expected to be up to ~6.5 hours old. In practice GitHub started the first scheduled runs (2026-10-18) 2.5–5 hours late, so gaps run 4.5–10 hours. We kept 4 runs a day rather than going hourly or using an outside trigger: the card always shows the reading's time, greys it out past 12 hours, and hides it past 24 hours (e.g. if the schedule gets switched off). If staleness becomes a problem, switching the cron to hourly (`17 * * * *`) is the simple fix.
 
 ### Steps
 

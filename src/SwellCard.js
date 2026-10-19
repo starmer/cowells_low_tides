@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { compassDir, fetchSwellHourly, componentsAt, fetchMopNowcast, fetchBuoyLatest, fetchNdbc } from "./swell";
 
-// The offshore buoy only updates four times a day: grey it out past this,
-// and drop it entirely if the data stops coming (e.g. the schedule stopped).
-const STALE_MS = 8 * 3600 * 1000;
+// The offshore buoy only updates four times a day, and GitHub has been
+// starting those runs 2–5 hours late, so readings are often 6–10 hours old.
+// Grey it out past this, and drop it entirely if the data stops coming
+// (e.g. the schedule stopped).
+const STALE_MS = 12 * 3600 * 1000;
 const GONE_MS = 24 * 3600 * 1000;
 
 // "4:30p", or "Sat 11:50p" when it isn't from today.
