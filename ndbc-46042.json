@@ -1,49 +1,27 @@
 {
  "station": "46042",
- "fetchedAt": "2026-10-21T17:20:16.798Z",
+ "fetchedAt": "2026-10-21T21:48:26.602Z",
  "latest": {
-  "time": "2026-10-21T16:50:00.000Z",
-  "heightFt": 7.2,
-  "periodS": 11,
-  "avgPeriodS": 9.6,
-  "directionDeg": 303,
+  "time": "2026-10-21T20:50:00.000Z",
+  "heightFt": 6.6,
+  "periodS": 10,
+  "avgPeriodS": 9.3,
+  "directionDeg": 309,
   "windKt": 6,
   "gustKt": 8,
-  "windDirDeg": 40,
+  "windDirDeg": 20,
   "waterTempF": 65
  },
- "split": null,
+ "split": {
+  "time": "2026-10-21T20:40:00.000Z",
+  "swellHeightFt": 6.6,
+  "swellPeriodS": 10,
+  "swellDirection": "NW",
+  "windWaveHeightFt": 0.7,
+  "windWavePeriodS": 3.1,
+  "windWaveDirection": "NNW"
+ },
  "series": [
-  {
-   "time": "2026-10-19T16:00:00.000Z",
-   "heightFt": 9.8,
-   "periodS": 13,
-   "directionDeg": 307
-  },
-  {
-   "time": "2026-10-19T17:00:00.000Z",
-   "heightFt": 9.2,
-   "periodS": 13,
-   "directionDeg": 301
-  },
-  {
-   "time": "2026-10-19T18:00:00.000Z",
-   "heightFt": 8.9,
-   "periodS": 13,
-   "directionDeg": 304
-  },
-  {
-   "time": "2026-10-19T19:00:00.000Z",
-   "heightFt": 8.9,
-   "periodS": 12,
-   "directionDeg": 312
-  },
-  {
-   "time": "2026-10-19T20:00:00.000Z",
-   "heightFt": 8.9,
-   "periodS": 12,
-   "directionDeg": 311
-  },
   {
    "time": "2026-10-19T21:00:00.000Z",
    "heightFt": 8.9,
@@ -307,6 +285,30 @@
    "heightFt": 7.2,
    "periodS": 11,
    "directionDeg": 303
+  },
+  {
+   "time": "2026-10-21T17:00:00.000Z",
+   "heightFt": 6.9,
+   "periodS": 11,
+   "directionDeg": 309
+  },
+  {
+   "time": "2026-10-21T18:00:00.000Z",
+   "heightFt": 7.5,
+   "periodS": 11,
+   "directionDeg": 322
+  },
+  {
+   "time": "2026-10-21T19:00:00.000Z",
+   "heightFt": 6.6,
+   "periodS": 14,
+   "directionDeg": 237
+  },
+  {
+   "time": "2026-10-21T20:00:00.000Z",
+   "heightFt": 6.6,
+   "periodS": 10,
+   "directionDeg": 309
   }
  ]
 }
