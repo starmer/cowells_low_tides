@@ -1,57 +1,27 @@
 {
  "station": "46042",
- "fetchedAt": "2026-10-23T17:15:28.311Z",
+ "fetchedAt": "2026-10-23T21:29:40.034Z",
  "latest": {
-  "time": "2026-10-23T16:20:00.000Z",
-  "heightFt": 8.2,
+  "time": "2026-10-23T20:50:00.000Z",
+  "heightFt": 8.9,
   "periodS": 10,
-  "avgPeriodS": 7.6,
-  "directionDeg": 321,
-  "windKt": 8,
-  "gustKt": 12,
-  "windDirDeg": 350,
+  "avgPeriodS": 7.3,
+  "directionDeg": 319,
+  "windKt": 19,
+  "gustKt": 21,
+  "windDirDeg": 330,
   "waterTempF": 65
  },
  "split": {
-  "time": "2026-10-23T16:10:00.000Z",
-  "swellHeightFt": 8.2,
+  "time": "2026-10-23T20:40:00.000Z",
+  "swellHeightFt": 7.2,
   "swellPeriodS": 10,
   "swellDirection": "NW",
-  "windWaveHeightFt": 1.6,
-  "windWavePeriodS": 3.6,
+  "windWaveHeightFt": 4.9,
+  "windWavePeriodS": 7.7,
   "windWaveDirection": "NW"
  },
  "series": [
-  {
-   "time": "2026-10-21T16:00:00.000Z",
-   "heightFt": 7.2,
-   "periodS": 11,
-   "directionDeg": 303
-  },
-  {
-   "time": "2026-10-21T17:00:00.000Z",
-   "heightFt": 6.9,
-   "periodS": 11,
-   "directionDeg": 309
-  },
-  {
-   "time": "2026-10-21T18:00:00.000Z",
-   "heightFt": 7.5,
-   "periodS": 11,
-   "directionDeg": 322
-  },
-  {
-   "time": "2026-10-21T19:00:00.000Z",
-   "heightFt": 6.6,
-   "periodS": 14,
-   "directionDeg": 237
-  },
-  {
-   "time": "2026-10-21T20:00:00.000Z",
-   "heightFt": 6.6,
-   "periodS": 10,
-   "directionDeg": 309
-  },
   {
    "time": "2026-10-21T21:00:00.000Z",
    "heightFt": 6.6,
@@ -312,9 +282,33 @@
   },
   {
    "time": "2026-10-23T16:00:00.000Z",
+   "heightFt": 8.5,
+   "periodS": 10,
+   "directionDeg": 330
+  },
+  {
+   "time": "2026-10-23T17:00:00.000Z",
+   "heightFt": 8.9,
+   "periodS": 10,
+   "directionDeg": 324
+  },
+  {
+   "time": "2026-10-23T18:00:00.000Z",
+   "heightFt": 8.5,
+   "periodS": 11,
+   "directionDeg": 318
+  },
+  {
+   "time": "2026-10-23T19:00:00.000Z",
    "heightFt": 8.2,
    "periodS": 10,
-   "directionDeg": 321
+   "directionDeg": 327
+  },
+  {
+   "time": "2026-10-23T20:00:00.000Z",
+   "heightFt": 8.9,
+   "periodS": 10,
+   "directionDeg": 319
   }
  ]
 }
