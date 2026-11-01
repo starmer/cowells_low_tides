@@ -1,51 +1,27 @@
 {
  "station": "46042",
- "fetchedAt": "2026-11-01T17:57:54.309Z",
+ "fetchedAt": "2026-11-01T22:09:36.023Z",
  "latest": {
-  "time": "2026-11-01T17:20:00.000Z",
-  "heightFt": 5.2,
-  "periodS": 7,
-  "avgPeriodS": 6.2,
-  "directionDeg": 279,
-  "windKt": 12,
+  "time": "2026-11-01T21:20:00.000Z",
+  "heightFt": 6.6,
+  "periodS": 8,
+  "avgPeriodS": 6.8,
+  "directionDeg": 288,
+  "windKt": 16,
   "gustKt": 17,
-  "windDirDeg": 350,
-  "waterTempF": 67
+  "windDirDeg": 330,
+  "waterTempF": 68
  },
  "split": {
-  "time": "2026-11-01T17:10:00.000Z",
-  "swellHeightFt": 3.9,
-  "swellPeriodS": 6.7,
-  "swellDirection": "W",
-  "windWaveHeightFt": 3.3,
-  "windWavePeriodS": 4.5,
+  "time": "2026-11-01T21:10:00.000Z",
+  "swellHeightFt": 5.6,
+  "swellPeriodS": 7.7,
+  "swellDirection": "WNW",
+  "windWaveHeightFt": 3.6,
+  "windWavePeriodS": 5.6,
   "windWaveDirection": "WNW"
  },
  "series": [
-  {
-   "time": "2026-10-30T17:00:00.000Z",
-   "heightFt": 5.6,
-   "periodS": 16,
-   "directionDeg": 183
-  },
-  {
-   "time": "2026-10-30T18:00:00.000Z",
-   "heightFt": 5.2,
-   "periodS": 16,
-   "directionDeg": 192
-  },
-  {
-   "time": "2026-10-30T19:00:00.000Z",
-   "heightFt": 5.6,
-   "periodS": 15,
-   "directionDeg": 231
-  },
-  {
-   "time": "2026-10-30T20:00:00.000Z",
-   "heightFt": 5.6,
-   "periodS": 15,
-   "directionDeg": 205
-  },
   {
    "time": "2026-10-30T21:00:00.000Z",
    "heightFt": 5.9,
@@ -312,9 +288,33 @@
   },
   {
    "time": "2026-11-01T17:00:00.000Z",
-   "heightFt": 5.2,
+   "heightFt": 5.6,
    "periodS": 7,
-   "directionDeg": 279
+   "directionDeg": 277
+  },
+  {
+   "time": "2026-11-01T18:00:00.000Z",
+   "heightFt": 5.2,
+   "periodS": 16,
+   "directionDeg": 181
+  },
+  {
+   "time": "2026-11-01T19:00:00.000Z",
+   "heightFt": 5.9,
+   "periodS": 16,
+   "directionDeg": 199
+  },
+  {
+   "time": "2026-11-01T20:00:00.000Z",
+   "heightFt": 6.6,
+   "periodS": 8,
+   "directionDeg": 292
+  },
+  {
+   "time": "2026-11-01T21:00:00.000Z",
+   "heightFt": 6.6,
+   "periodS": 8,
+   "directionDeg": 288
   }
  ]
 }
