@@ -1,75 +1,27 @@
 {
  "station": "46042",
- "fetchedAt": "2026-11-07T21:57:49.067Z",
+ "fetchedAt": "2026-11-08T06:15:24.704Z",
  "latest": {
-  "time": "2026-11-07T20:50:00.000Z",
-  "heightFt": 11.8,
-  "periodS": 13,
-  "avgPeriodS": 10.1,
-  "directionDeg": 301,
-  "windKt": 6,
-  "gustKt": 12,
-  "windDirDeg": 300,
+  "time": "2026-11-08T05:20:00.000Z",
+  "heightFt": 14.1,
+  "periodS": 14,
+  "avgPeriodS": 10.4,
+  "directionDeg": 291,
+  "windKt": 19,
+  "gustKt": 23,
+  "windDirDeg": 330,
   "waterTempF": 67
  },
  "split": {
-  "time": "2026-11-07T20:40:00.000Z",
-  "swellHeightFt": 11.8,
-  "swellPeriodS": 12.9,
+  "time": "2026-11-08T05:10:00.000Z",
+  "swellHeightFt": 13.1,
+  "swellPeriodS": 13.8,
   "swellDirection": "WNW",
-  "windWaveHeightFt": 1.6,
-  "windWavePeriodS": 3.7,
-  "windWaveDirection": "E"
+  "windWaveHeightFt": 4.6,
+  "windWavePeriodS": 7.1,
+  "windWaveDirection": "WNW"
  },
  "series": [
-  {
-   "time": "2026-11-05T21:00:00.000Z",
-   "heightFt": 8.5,
-   "periodS": 11,
-   "directionDeg": 286
-  },
-  {
-   "time": "2026-11-05T22:00:00.000Z",
-   "heightFt": 7.9,
-   "periodS": 12,
-   "directionDeg": 299
-  },
-  {
-   "time": "2026-11-05T23:00:00.000Z",
-   "heightFt": 7.9,
-   "periodS": 13,
-   "directionDeg": 291
-  },
-  {
-   "time": "2026-11-06T00:00:00.000Z",
-   "heightFt": 9.2,
-   "periodS": 14,
-   "directionDeg": 290
-  },
-  {
-   "time": "2026-11-06T01:00:00.000Z",
-   "heightFt": 8.9,
-   "periodS": 14,
-   "directionDeg": 289
-  },
-  {
-   "time": "2026-11-06T02:00:00.000Z",
-   "heightFt": 9.2,
-   "periodS": 12,
-   "directionDeg": 281
-  },
-  {
-   "time": "2026-11-06T03:00:00.000Z",
-   "heightFt": 9.2,
-   "periodS": null,
-   "directionDeg": 307
-  },
-  {
-   "time": "2026-11-06T04:00:00.000Z",
-   "heightFt": 9.5,
-   "periodS": 14,
-   "directionDeg": 307
-  },
   {
    "time": "2026-11-06T05:00:00.000Z",
    "heightFt": 10.2,
@@ -309,6 +261,60 @@
    "heightFt": 11.8,
    "periodS": null,
    "directionDeg": 301
+  },
+  {
+   "time": "2026-11-07T21:00:00.000Z",
+   "heightFt": 13.8,
+   "periodS": 13,
+   "directionDeg": 292
+  },
+  {
+   "time": "2026-11-07T22:00:00.000Z",
+   "heightFt": 13.8,
+   "periodS": 15,
+   "directionDeg": 286
+  },
+  {
+   "time": "2026-11-07T23:00:00.000Z",
+   "heightFt": 12.5,
+   "periodS": 15,
+   "directionDeg": 293
+  },
+  {
+   "time": "2026-11-08T00:00:00.000Z",
+   "heightFt": 13.8,
+   "periodS": 14,
+   "directionDeg": 285
+  },
+  {
+   "time": "2026-11-08T01:00:00.000Z",
+   "heightFt": 14.8,
+   "periodS": 15,
+   "directionDeg": 286
+  },
+  {
+   "time": "2026-11-08T02:00:00.000Z",
+   "heightFt": 13.8,
+   "periodS": 13,
+   "directionDeg": 289
+  },
+  {
+   "time": "2026-11-08T03:00:00.000Z",
+   "heightFt": 14.8,
+   "periodS": 15,
+   "directionDeg": 293
+  },
+  {
+   "time": "2026-11-08T04:00:00.000Z",
+   "heightFt": 13.5,
+   "periodS": 15,
+   "directionDeg": 287
+  },
+  {
+   "time": "2026-11-08T05:00:00.000Z",
+   "heightFt": 14.1,
+   "periodS": 14,
+   "directionDeg": 291
   }
  ]
 }
