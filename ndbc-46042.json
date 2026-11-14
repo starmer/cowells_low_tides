@@ -1,51 +1,27 @@
 {
  "station": "46042",
- "fetchedAt": "2026-11-14T18:15:07.156Z",
+ "fetchedAt": "2026-11-14T22:35:16.397Z",
  "latest": {
-  "time": "2026-11-14T17:30:00.000Z",
-  "heightFt": 32.2,
+  "time": "2026-11-14T21:50:00.000Z",
+  "heightFt": 25.3,
   "periodS": 17,
-  "avgPeriodS": 14.1,
-  "directionDeg": 288,
-  "windKt": 12,
-  "gustKt": 21,
-  "windDirDeg": 90,
-  "waterTempF": 67
+  "avgPeriodS": 12.4,
+  "directionDeg": 273,
+  "windKt": 6,
+  "gustKt": 16,
+  "windDirDeg": 190,
+  "waterTempF": 68
  },
  "split": {
-  "time": "2026-11-14T17:40:00.000Z",
-  "swellHeightFt": 32.2,
-  "swellPeriodS": 19,
-  "swellDirection": "WNW",
-  "windWaveHeightFt": 2.6,
-  "windWavePeriodS": 5,
+  "time": "2026-11-14T21:40:00.000Z",
+  "swellHeightFt": 25.3,
+  "swellPeriodS": 17.4,
+  "swellDirection": "W",
+  "windWaveHeightFt": 2,
+  "windWavePeriodS": 4,
   "windWaveDirection": "WSW"
  },
  "series": [
-  {
-   "time": "2026-11-12T17:00:00.000Z",
-   "heightFt": 8.9,
-   "periodS": 15,
-   "directionDeg": 278
-  },
-  {
-   "time": "2026-11-12T18:00:00.000Z",
-   "heightFt": 10.2,
-   "periodS": 14,
-   "directionDeg": 273
-  },
-  {
-   "time": "2026-11-12T19:00:00.000Z",
-   "heightFt": 10.5,
-   "periodS": 14,
-   "directionDeg": 285
-  },
-  {
-   "time": "2026-11-12T20:00:00.000Z",
-   "heightFt": 10.5,
-   "periodS": 14,
-   "directionDeg": 286
-  },
   {
    "time": "2026-11-12T21:00:00.000Z",
    "heightFt": 11.5,
@@ -313,8 +289,32 @@
   {
    "time": "2026-11-14T17:00:00.000Z",
    "heightFt": 32.2,
-   "periodS": null,
+   "periodS": 19,
    "directionDeg": 288
+  },
+  {
+   "time": "2026-11-14T18:00:00.000Z",
+   "heightFt": 28.9,
+   "periodS": 15,
+   "directionDeg": 283
+  },
+  {
+   "time": "2026-11-14T19:00:00.000Z",
+   "heightFt": 29.2,
+   "periodS": 19,
+   "directionDeg": 291
+  },
+  {
+   "time": "2026-11-14T20:00:00.000Z",
+   "heightFt": 24,
+   "periodS": 19,
+   "directionDeg": 276
+  },
+  {
+   "time": "2026-11-14T21:00:00.000Z",
+   "heightFt": 25.3,
+   "periodS": 17,
+   "directionDeg": 273
   }
  ]
 }
