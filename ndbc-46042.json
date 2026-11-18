@@ -1,105 +1,27 @@
 {
  "station": "46042",
- "fetchedAt": "2026-11-18T07:39:59.305Z",
+ "fetchedAt": "2026-11-18T20:39:37.387Z",
  "latest": {
-  "time": "2026-11-18T06:50:00.000Z",
-  "heightFt": 10.2,
-  "periodS": 11,
-  "avgPeriodS": 8.7,
-  "directionDeg": 288,
-  "windKt": 16,
-  "gustKt": 19,
-  "windDirDeg": 200,
-  "waterTempF": 68
+  "time": "2026-11-18T19:50:00.000Z",
+  "heightFt": 14.1,
+  "periodS": 9,
+  "avgPeriodS": 6.7,
+  "directionDeg": 237,
+  "windKt": 35,
+  "gustKt": 45,
+  "windDirDeg": 180,
+  "waterTempF": 67
  },
  "split": {
-  "time": "2026-11-18T06:40:00.000Z",
-  "swellHeightFt": 9.8,
+  "time": "2026-11-18T19:40:00.000Z",
+  "swellHeightFt": 7.5,
   "swellPeriodS": 10.8,
   "swellDirection": "WNW",
-  "windWaveHeightFt": 2.6,
-  "windWavePeriodS": 5.6,
-  "windWaveDirection": "W"
+  "windWaveHeightFt": 12.1,
+  "windWavePeriodS": 9.1,
+  "windWaveDirection": "WSW"
  },
  "series": [
-  {
-   "time": "2026-11-16T07:00:00.000Z",
-   "heightFt": 22.3,
-   "periodS": null,
-   "directionDeg": 293
-  },
-  {
-   "time": "2026-11-16T08:00:00.000Z",
-   "heightFt": 17.1,
-   "periodS": 17,
-   "directionDeg": 302
-  },
-  {
-   "time": "2026-11-16T09:00:00.000Z",
-   "heightFt": 24,
-   "periodS": 16,
-   "directionDeg": 294
-  },
-  {
-   "time": "2026-11-16T10:00:00.000Z",
-   "heightFt": 20.7,
-   "periodS": 15,
-   "directionDeg": 286
-  },
-  {
-   "time": "2026-11-16T11:00:00.000Z",
-   "heightFt": 21.7,
-   "periodS": 17,
-   "directionDeg": 288
-  },
-  {
-   "time": "2026-11-16T12:00:00.000Z",
-   "heightFt": 20.7,
-   "periodS": 16,
-   "directionDeg": 284
-  },
-  {
-   "time": "2026-11-16T13:00:00.000Z",
-   "heightFt": 22.3,
-   "periodS": 16,
-   "directionDeg": 286
-  },
-  {
-   "time": "2026-11-16T14:00:00.000Z",
-   "heightFt": 20.7,
-   "periodS": 17,
-   "directionDeg": 287
-  },
-  {
-   "time": "2026-11-16T15:00:00.000Z",
-   "heightFt": 20.3,
-   "periodS": 16,
-   "directionDeg": 288
-  },
-  {
-   "time": "2026-11-16T16:00:00.000Z",
-   "heightFt": 15.7,
-   "periodS": 16,
-   "directionDeg": 289
-  },
-  {
-   "time": "2026-11-16T17:00:00.000Z",
-   "heightFt": 16.4,
-   "periodS": 16,
-   "directionDeg": 287
-  },
-  {
-   "time": "2026-11-16T18:00:00.000Z",
-   "heightFt": 18,
-   "periodS": 16,
-   "directionDeg": 288
-  },
-  {
-   "time": "2026-11-16T19:00:00.000Z",
-   "heightFt": 17.4,
-   "periodS": 16,
-   "directionDeg": 282
-  },
   {
    "time": "2026-11-16T20:00:00.000Z",
    "heightFt": 16.4,
@@ -309,6 +231,84 @@
    "heightFt": 10.2,
    "periodS": 11,
    "directionDeg": 288
+  },
+  {
+   "time": "2026-11-18T07:00:00.000Z",
+   "heightFt": 8.9,
+   "periodS": 14,
+   "directionDeg": 307
+  },
+  {
+   "time": "2026-11-18T08:00:00.000Z",
+   "heightFt": 8.5,
+   "periodS": 14,
+   "directionDeg": 288
+  },
+  {
+   "time": "2026-11-18T09:00:00.000Z",
+   "heightFt": 8.2,
+   "periodS": 13,
+   "directionDeg": 266
+  },
+  {
+   "time": "2026-11-18T10:00:00.000Z",
+   "heightFt": 7.9,
+   "periodS": 14,
+   "directionDeg": 303
+  },
+  {
+   "time": "2026-11-18T11:00:00.000Z",
+   "heightFt": 8.9,
+   "periodS": 14,
+   "directionDeg": 341
+  },
+  {
+   "time": "2026-11-18T12:00:00.000Z",
+   "heightFt": 8.2,
+   "periodS": 13,
+   "directionDeg": 290
+  },
+  {
+   "time": "2026-11-18T13:00:00.000Z",
+   "heightFt": 7.5,
+   "periodS": null,
+   "directionDeg": 271
+  },
+  {
+   "time": "2026-11-18T14:00:00.000Z",
+   "heightFt": 8.2,
+   "periodS": 13,
+   "directionDeg": 278
+  },
+  {
+   "time": "2026-11-18T15:00:00.000Z",
+   "heightFt": 8.9,
+   "periodS": 13,
+   "directionDeg": 285
+  },
+  {
+   "time": "2026-11-18T16:00:00.000Z",
+   "heightFt": 9.5,
+   "periodS": 6,
+   "directionDeg": 189
+  },
+  {
+   "time": "2026-11-18T17:00:00.000Z",
+   "heightFt": 11.2,
+   "periodS": 8,
+   "directionDeg": 231
+  },
+  {
+   "time": "2026-11-18T18:00:00.000Z",
+   "heightFt": 12.1,
+   "periodS": 6,
+   "directionDeg": 188
+  },
+  {
+   "time": "2026-11-18T19:00:00.000Z",
+   "heightFt": 14.1,
+   "periodS": 9,
+   "directionDeg": 237
   }
  ]
 }
