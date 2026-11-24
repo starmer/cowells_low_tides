@@ -1,105 +1,27 @@
 {
  "station": "46042",
- "fetchedAt": "2026-11-24T10:02:20.304Z",
+ "fetchedAt": "2026-11-24T22:33:50.151Z",
  "latest": {
-  "time": "2026-11-24T08:50:00.000Z",
-  "heightFt": 5.2,
-  "periodS": 11,
-  "avgPeriodS": 9.6,
-  "directionDeg": 330,
-  "windKt": 12,
-  "gustKt": 14,
-  "windDirDeg": 150,
+  "time": "2026-11-24T21:50:00.000Z",
+  "heightFt": 11.2,
+  "periodS": 12,
+  "avgPeriodS": 8.1,
+  "directionDeg": 263,
+  "windKt": 19,
+  "gustKt": 25,
+  "windDirDeg": 180,
   "waterTempF": 67
  },
  "split": {
-  "time": "2026-11-24T08:40:00.000Z",
-  "swellHeightFt": 5.2,
-  "swellPeriodS": 11.4,
-  "swellDirection": "NNW",
-  "windWaveHeightFt": 1,
-  "windWavePeriodS": 4.8,
-  "windWaveDirection": "W"
+  "time": "2026-11-24T21:40:00.000Z",
+  "swellHeightFt": 10.2,
+  "swellPeriodS": 12.1,
+  "swellDirection": "W",
+  "windWaveHeightFt": 4.6,
+  "windWavePeriodS": 6.2,
+  "windWaveDirection": "WSW"
  },
  "series": [
-  {
-   "time": "2026-11-22T09:00:00.000Z",
-   "heightFt": 5.9,
-   "periodS": 13,
-   "directionDeg": 296
-  },
-  {
-   "time": "2026-11-22T10:00:00.000Z",
-   "heightFt": 6.2,
-   "periodS": 15,
-   "directionDeg": 312
-  },
-  {
-   "time": "2026-11-22T11:00:00.000Z",
-   "heightFt": 6.2,
-   "periodS": 14,
-   "directionDeg": 303
-  },
-  {
-   "time": "2026-11-22T12:00:00.000Z",
-   "heightFt": 6.2,
-   "periodS": 12,
-   "directionDeg": 313
-  },
-  {
-   "time": "2026-11-22T13:00:00.000Z",
-   "heightFt": 7.2,
-   "periodS": 14,
-   "directionDeg": 308
-  },
-  {
-   "time": "2026-11-22T14:00:00.000Z",
-   "heightFt": 7.2,
-   "periodS": 10,
-   "directionDeg": 305
-  },
-  {
-   "time": "2026-11-22T15:00:00.000Z",
-   "heightFt": 8.2,
-   "periodS": 10,
-   "directionDeg": 304
-  },
-  {
-   "time": "2026-11-22T16:00:00.000Z",
-   "heightFt": 8.5,
-   "periodS": 10,
-   "directionDeg": 315
-  },
-  {
-   "time": "2026-11-22T17:00:00.000Z",
-   "heightFt": 8.9,
-   "periodS": 10,
-   "directionDeg": 324
-  },
-  {
-   "time": "2026-11-22T18:00:00.000Z",
-   "heightFt": 8.9,
-   "periodS": 11,
-   "directionDeg": 305
-  },
-  {
-   "time": "2026-11-22T19:00:00.000Z",
-   "heightFt": 11.5,
-   "periodS": 13,
-   "directionDeg": 307
-  },
-  {
-   "time": "2026-11-22T20:00:00.000Z",
-   "heightFt": 9.8,
-   "periodS": 11,
-   "directionDeg": 309
-  },
-  {
-   "time": "2026-11-22T21:00:00.000Z",
-   "heightFt": 9.5,
-   "periodS": 12,
-   "directionDeg": 314
-  },
   {
    "time": "2026-11-22T22:00:00.000Z",
    "heightFt": 10.2,
@@ -309,6 +231,84 @@
    "heightFt": 5.2,
    "periodS": 11,
    "directionDeg": 330
+  },
+  {
+   "time": "2026-11-24T09:00:00.000Z",
+   "heightFt": 5.2,
+   "periodS": 11,
+   "directionDeg": 321
+  },
+  {
+   "time": "2026-11-24T10:00:00.000Z",
+   "heightFt": 5.2,
+   "periodS": 11,
+   "directionDeg": 326
+  },
+  {
+   "time": "2026-11-24T11:00:00.000Z",
+   "heightFt": 5.6,
+   "periodS": 10,
+   "directionDeg": 314
+  },
+  {
+   "time": "2026-11-24T12:00:00.000Z",
+   "heightFt": 5.2,
+   "periodS": 11,
+   "directionDeg": 325
+  },
+  {
+   "time": "2026-11-24T13:00:00.000Z",
+   "heightFt": 6.2,
+   "periodS": 16,
+   "directionDeg": 183
+  },
+  {
+   "time": "2026-11-24T14:00:00.000Z",
+   "heightFt": 6.2,
+   "periodS": 11,
+   "directionDeg": 297
+  },
+  {
+   "time": "2026-11-24T15:00:00.000Z",
+   "heightFt": 6.9,
+   "periodS": 12,
+   "directionDeg": 288
+  },
+  {
+   "time": "2026-11-24T16:00:00.000Z",
+   "heightFt": 6.6,
+   "periodS": 12,
+   "directionDeg": 286
+  },
+  {
+   "time": "2026-11-24T17:00:00.000Z",
+   "heightFt": 8.9,
+   "periodS": 11,
+   "directionDeg": 272
+  },
+  {
+   "time": "2026-11-24T18:00:00.000Z",
+   "heightFt": 8.5,
+   "periodS": null,
+   "directionDeg": 266
+  },
+  {
+   "time": "2026-11-24T19:00:00.000Z",
+   "heightFt": 10.2,
+   "periodS": 12,
+   "directionDeg": 272
+  },
+  {
+   "time": "2026-11-24T20:00:00.000Z",
+   "heightFt": 10.2,
+   "periodS": 11,
+   "directionDeg": 261
+  },
+  {
+   "time": "2026-11-24T21:00:00.000Z",
+   "heightFt": 11.2,
+   "periodS": 12,
+   "directionDeg": 263
   }
  ]
 }
